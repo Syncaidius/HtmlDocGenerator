@@ -17,6 +17,7 @@ namespace HtmlDocGenerator
         public DocObject AddMember(string name, DocObjectType type)
         {
             DocObject member = new DocObject(name, type);
+            member.Parent = this;
 
             Members.Add(name, member);
             return member;
@@ -32,6 +33,8 @@ namespace HtmlDocGenerator
         public Dictionary<string, DocObject> Members { get; } = new Dictionary<string, DocObject>();
 
         public DocObjectType Type { get; set; }
+
+        public DocObject Parent { get; set; }
     }
 
     public enum DocObjectType
