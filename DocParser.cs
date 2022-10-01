@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,24 +10,101 @@ namespace HtmlDocGenerator
 {
     public class DocParser
     {
+        Dictionary<string, DocObjectType> _typeKeys = new Dictionary<string, DocObjectType>()
+        {
+            ["T"] = DocObjectType.UnspecifiedType,
+            ["E"] = DocObjectType.Event,
+            ["P"] = DocObjectType.Property,
+            ["F"] = DocObjectType.Field,
+            ["M"] = DocObjectType.Method
+        };
+
         public DocParser()
         {
 
         }
 
-        public Documentation Parse(FileStream stream)
+        public DocData Parse(FileStream stream)
         {
-            string json = null;
+            DocData doc = new DocData();
+            DocNode root = new DocNode()
+            {
+                Type = DocNodeType.Document
+            };
+
             using (XmlReader reader = XmlReader.Create(stream))
             {
                 reader.MoveToContent();
-                //reader.ReadToDescendant("doc");
                 XmlDocument xml = new XmlDocument();
                 xml.Load(reader);
-                json = JsonConvert.SerializeXmlNode(xml, Newtonsoft.Json.Formatting.Indented, true);
+
+                ParseNode(doc, xml, root);
             }
 
-            return JsonConvert.DeserializeObject<Documentation>(json);
+            return doc;
+        }
+
+        private void ParseNode(DocData doc, XmlNode xmlNode, DocNode docNode)
+        {
+            docNode.Name = xmlNode.Name;
+
+            switch (docNode.Name)
+            {
+                case "assembly":
+                    XmlNode aName = xmlNode["name"];
+                    doc.Assembly = new DocAssembly(aName.InnerText);
+                    break;
+
+                case "member":
+                    ParseMemberNode(doc, xmlNode, docNode);
+                    break;
+            }
+
+            // Parse child nodes
+            foreach(XmlNode child in xmlNode.ChildNodes)
+            {
+                DocNode docChild = new DocNode();
+                docNode.Children.Add(docChild);
+
+                ParseNode(doc, child, docChild);
+            }
+        }
+
+        private void ParseMemberNode(DocData doc, XmlNode xmlNode, DocNode docNode)
+        {
+            XmlAttribute attName = xmlNode.Attributes["name"];
+
+            if (attName == null)
+                return;
+
+            string memberName = attName.Value;
+            string typeKey = memberName.Substring(0, 1);
+            DocObjectType objectType = DocObjectType.None;
+
+            if (!_typeKeys.TryGetValue(typeKey, out objectType))
+                return;
+
+            memberName = memberName.Substring(2, memberName.Length - 2);
+            string[] mParts = memberName.Split('.');
+
+            // Breakdown the member name into parts so we can put the member inside the correct namespace or type.
+
+            DocObject parent = doc;
+            for(int i = 0; i < mParts.Length; i++)
+            {
+                string part = mParts[i];
+
+                if(!parent.Members.TryGetValue(part, out DocObject obj))
+                {
+                    DocObjectType newObjType = objectType;
+                    if (i != mParts.Length - 1)
+                        newObjType = DocObjectType.None;
+
+                    obj = parent.AddMember(part, objectType);
+                }
+
+                parent = obj;
+            }
         }
     }
 }

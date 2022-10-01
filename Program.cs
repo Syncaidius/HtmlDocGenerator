@@ -42,7 +42,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 return;
             }
 
-            Documentation doc = null;
+            DocData doc = null;
             using (FileStream stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read))
                 doc = parser.Parse(stream);
         }
