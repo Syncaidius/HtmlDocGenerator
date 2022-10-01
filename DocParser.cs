@@ -94,13 +94,18 @@ namespace HtmlDocGenerator
             {
                 string part = mParts[i];
 
-                if(!parent.Members.TryGetValue(part, out DocObject obj))
-                {
-                    DocObjectType newObjType = objectType;
-                    if (i != mParts.Length - 1)
-                        newObjType = DocObjectType.None;
+                DocObjectType newObjType = objectType;
+                if (i != mParts.Length - 1)
+                    newObjType = DocObjectType.None;
 
-                    obj = parent.AddMember(part, objectType);
+                if (!parent.Members.TryGetValue(part, out DocObject obj))
+                {
+                    obj = parent.AddMember(part, newObjType);
+                }
+                else
+                {
+                    if(newObjType != DocObjectType.None)
+                        obj.Type = newObjType;
                 }
 
                 parent = obj;

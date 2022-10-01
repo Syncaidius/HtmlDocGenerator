@@ -1,5 +1,6 @@
 ﻿using HtmlDocGenerator;
 using System;
+using System.Reflection;
 
 namespace MyApp // Note: actual namespace depends on the project name.
 {
@@ -18,6 +19,8 @@ namespace MyApp // Note: actual namespace depends on the project name.
         private static void Run(string[] args)
         {
             DocParser parser = new DocParser();
+            HtmlGenerator generator = new HtmlGenerator();
+
             Array.Resize(ref args, 1);
             args[0] = "Molten.Engine.xml";
 
@@ -35,7 +38,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
             }
 
             // Check if an index.html template exists in the same directory
-            string indexPath = $"{info.Directory.FullName}\\index.html";
+            string indexPath = $"{info.Directory.FullName}\\docs\\template.html";
             if (!File.Exists(indexPath))
             {
                 Console.WriteLine($"Index.html template not found: {indexPath}");
@@ -45,6 +48,11 @@ namespace MyApp // Note: actual namespace depends on the project name.
             DocData doc = null;
             using (FileStream stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read))
                 doc = parser.Parse(stream);
+
+
+            FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
+
+            generator.Generate(doc, indexPath, $"{exeInfo.DirectoryName}\\docs\\");
         }
     }
 }
