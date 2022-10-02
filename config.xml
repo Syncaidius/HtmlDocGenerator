@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+	<definitions>
+		<def>src\Molten.Engine.xml</def>
+		<def>src\Molten.Font.xml</def>
+		<def>src\Molten.IO.xml</def>
+		<def>src\Molten.Math.xml</def>
+		<def>src\Molten.Utility.xml</def>
+	</definitions>
+
+	<nuget>
+		<package>
+			<name>Newtonsoft.Json</name>
+			<version>13.0.1</version>
+		</package>
+	</nuget>
+</config>

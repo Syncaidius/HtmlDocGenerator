@@ -53,7 +53,6 @@ namespace HtmlDocGenerator
             foreach (DocObject obj in doc.Members.Values)
                 TranslateNamespace(obj, "", namespaceList);
 
-
             // Output namespaces and their objects
             foreach(string ns in namespaceList.Keys)
             {

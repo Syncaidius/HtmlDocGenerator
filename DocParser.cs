@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -24,7 +25,7 @@ namespace HtmlDocGenerator
 
         }
 
-        public DocData Parse(FileStream stream)
+        public DocData ParseXml(FileStream stream)
         {
             DocData doc = new DocData();
             DocNode root = new DocNode()
@@ -42,6 +43,12 @@ namespace HtmlDocGenerator
             }
 
             return doc;
+        }
+
+        public void ScanAssembly(DocData data, Assembly assembly)
+        {
+            Type[] aTypes = assembly.GetExportedTypes();
+
         }
 
         private void ParseNode(DocData doc, XmlNode xmlNode, DocNode docNode)
