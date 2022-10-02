@@ -47,7 +47,7 @@ namespace HtmlDocGenerator
 
         public void ScanAssembly(DocData data, Assembly assembly)
         {
-            Type[] aTypes = assembly.GetExportedTypes();
+            //Type[] aTypes = assembly.GetExportedTypes();
 
         }
 

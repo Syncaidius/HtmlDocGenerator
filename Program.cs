@@ -9,6 +9,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
     internal class Program
     {
         static Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>();
+        const string PACKAGE_STORE_PATH = "packages\\";
 
         static void Main(string[] args)
         {
@@ -25,6 +26,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
             GeneratorConfig config = GeneratorConfig.Load("config.xml");
             DocParser parser = new DocParser();
             HtmlGenerator generator = new HtmlGenerator();
+            NugetDownloader nuget = new NugetDownloader(PACKAGE_STORE_PATH);
+
+            foreach (NugetDefinition nd in config.Packages)
+                nuget.GetPackage(nd);
 
             Array.Resize(ref args, 1);
             args[0] = "src\\Molten.Engine.xml";
