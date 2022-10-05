@@ -14,6 +14,8 @@ namespace HtmlDocGenerator
 
         public List<DocNode> Children { get; } = new List<DocNode>();
 
+        public string Summary { get; set; }
+
         public DocNode AddChild<T>(string name)
         {
             DocNode child = new DocNode()

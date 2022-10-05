@@ -10,6 +10,7 @@ namespace HtmlDocGenerator
 {
     public class GeneratorConfig
     {
+        public string Template { get; protected set; }
         public List<string> Definitions { get; }
 
         public List<NugetDefinition> Packages {get;}
@@ -32,6 +33,9 @@ namespace HtmlDocGenerator
 
                 XmlNode defs = doc["config"]["definitions"];
                 XmlNode nugets = doc["config"]["nuget"];
+                XmlNode template = doc["config"]["template"];
+
+                config.Template = template.InnerText;
 
                 foreach (XmlNode child in defs.ChildNodes)
                     config.Definitions.Add(child.InnerText);
@@ -40,11 +44,13 @@ namespace HtmlDocGenerator
                 {
                     XmlNode xName = nug["name"];
                     XmlNode xVersion = nug["version"];
+                    XmlNode xFramework = nug["framework"];
 
                     config.Packages.Add(new NugetDefinition()
                     {
                         Name = xName != null ? xName.InnerText : "",
-                        Version = xVersion != null ? xVersion.InnerText : ""
+                        Version = xVersion != null ? xVersion.InnerText : "",
+                        Framework = xFramework != null ? xFramework.InnerText : ""
                     });
                 }
             }

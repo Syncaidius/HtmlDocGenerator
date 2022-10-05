@@ -11,6 +11,8 @@ namespace MyApp // Note: actual namespace depends on the project name.
         static Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>();
         const string PACKAGE_STORE_PATH = "packages\\";
 
+        static NugetDownloader _nuget;
+
         static void Main(string[] args)
         {
             Run(args);
@@ -26,70 +28,92 @@ namespace MyApp // Note: actual namespace depends on the project name.
             GeneratorConfig config = GeneratorConfig.Load("config.xml");
             DocParser parser = new DocParser();
             HtmlGenerator generator = new HtmlGenerator();
-            NugetDownloader nuget = new NugetDownloader(PACKAGE_STORE_PATH);
+            _nuget = new NugetDownloader(PACKAGE_STORE_PATH);
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
             foreach (NugetDefinition nd in config.Packages)
-                nuget.GetPackage(nd);
+                LoadNugetPackage(nd);
 
-            Array.Resize(ref args, 1);
-            args[0] = "src\\Molten.Engine.xml";
-
-            if (args.Length == 0)
+            // Check if template exists.
+            if (!File.Exists(config.Template))
             {
-                Console.WriteLine("No arguments provided");
+                Console.WriteLine($"Index.html template not found: {config.Template}");
                 return;
             }
 
-            FileInfo info = new FileInfo(args[0]);
-            if (!info.Exists)
+            foreach (string def in config.Definitions)
             {
-                Console.WriteLine($"The specified file does not exist: {info.FullName}");
-                return;
+                FileInfo info = new FileInfo(def);
+                if (!info.Exists)
+                {
+                    Console.WriteLine($"The specified file does not exist: {info.FullName}");
+                    return;
+                }
+
+                DocData doc = null;
+                using (FileStream stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read))
+                    doc = parser.ParseXml(stream);
+
+                Assembly assembly = LoadAssembly($"{info.Directory}\\{doc.Assembly.Name}.dll");
+                if (assembly != null)
+                    parser.ScanAssembly(doc, assembly);
+
+                FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
+
+                generator.Generate(doc, config.Template, $"{exeInfo.DirectoryName}\\docs\\");
             }
-
-            // Check if an index.html template exists in the same directory
-            string indexPath = $"docs\\template.html";
-            if (!File.Exists(indexPath))
-            {
-                Console.WriteLine($"Index.html template not found: {indexPath}");
-                return;
-            }
-
-            DocData doc = null;
-            using (FileStream stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read))
-                doc = parser.ParseXml(stream);
-
-            Assembly assembly = ScanAssembly($"{info.Directory}\\{doc.Assembly.Name}.dll");
-            if(assembly != null)
-                parser.ScanAssembly(doc, assembly);
-
-            FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
-
-            generator.Generate(doc, indexPath, $"{exeInfo.DirectoryName}\\docs\\");
         }
 
-        private static Assembly ScanAssembly(string path)
+        private static void LoadNugetPackage(NugetDefinition nd)
         {
-            FileInfo assemblyInfo = new FileInfo(path);
-            if (assemblyInfo.Exists)
+            Task<string> packageTask = _nuget.GetPackage(nd);
+            packageTask.Wait();
+            try
             {
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-                Assembly assembly = Assembly.LoadFile(assemblyInfo.FullName);
+                string aPath = $"{packageTask.Result}lib\\{nd.Framework}\\{nd.Name}.dll";
+                using (FileStream stream = new FileStream(aPath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] assemblyBytes = new byte[stream.Length];
+                    stream.Read(assemblyBytes, 0, (int)stream.Length);
 
-                return assembly;
+                    Assembly packageAssembly = Assembly.Load(assemblyBytes);
+                    _loadedAssemblies.Add(nd.Name, packageAssembly);
+                }
+
+
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: Failed to load package '{nd.Name}' for framework '{nd.Framework}': {ex.Message}");
+            }
+        }
 
-            return null;
+        private static Assembly LoadAssembly(string path)
+        {
+            if (!File.Exists(path))
+                return null;
+
+            path = Path.GetFullPath(path);
+            Assembly assembly = Assembly.LoadFile(path);
+            string[] aParts = assembly.FullName.Split(',');
+            string aName = aParts[0];
+
+            _loadedAssemblies.Add(aName, assembly);
+
+            return assembly;
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            if (!_loadedAssemblies.TryGetValue(args.Name, out Assembly assembly))
+            string[] aParts = args.Name.Split(',');
+            string aName = aParts[0];
+
+            if (!_loadedAssemblies.TryGetValue(aName, out Assembly assembly))
             {
                 FileInfo requestingInfo = new FileInfo(args.RequestingAssembly.Location);
-
-                string[] aParts = args.Name.Split(',');
-                FileInfo assemblyInfo = new FileInfo($"{requestingInfo.Directory.FullName}\\{aParts[0]}.dll");
+                string aVersion = aParts[1].Replace("Version=", "");
+                FileInfo assemblyInfo = new FileInfo($"{requestingInfo.Directory.FullName}\\{aName}.dll");
 
                 if (assemblyInfo.Exists)
                 {
@@ -97,6 +121,11 @@ namespace MyApp // Note: actual namespace depends on the project name.
                     assembly = Assembly.LoadFile(assemblyInfo.FullName);
                     _loadedAssemblies.Add(assembly.FullName, assembly);
                     return assembly;
+                }
+                else
+                {
+                    // TODO notify of missing assembly.
+                    Console.WriteLine($"Error: Missing assembly '{args.Name}'");
                 }
 
                 return null;

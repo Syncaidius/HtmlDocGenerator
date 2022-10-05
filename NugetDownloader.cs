@@ -9,21 +9,32 @@ namespace HtmlDocGenerator
 {
     public class NugetDownloader
     {
-        string _apiUrl = "https://api.nuget.org/v3-flatcontainer/";
+        string _apiUrl;
         HttpClient _http;
         string _storePath;
+        static readonly string[] dotNetVersions =
+        {
+            "netstandard2.0",
+            "netstandard1.3",
+            "netstandard1.0",
+            "net4.5",
+            "net4.0",
+            "net3.5",
+            "net2.0",
+        };
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="packageStorePath">The directory path used for storing downloaded nuget packages.</param>
-        public NugetDownloader(string packageStorePath)
+        public NugetDownloader(string packageStorePath, string apiUrl = "https://api.nuget.org/v3-flatcontainer/")
         {
             _http = new HttpClient();
+            _apiUrl = apiUrl;
             _storePath = packageStorePath;
         }
 
-        public async void GetPackage(NugetDefinition def)
+        public async Task<string> GetPackage(NugetDefinition def)
         {
             string name = def.Name.ToLower();
             string version = def.Version.ToLower();
@@ -60,13 +71,12 @@ namespace HtmlDocGenerator
                     }
                 }
 
+                string pathVersion = version.Replace('.', '_');
+                string destPath = $"{_storePath}\\{name}\\{pathVersion}\\";
+
                 // Unpack downloaded .nupkg file.
-                // Read unpackaged metadata file to see if there are any dependencies it needs.
                 using (ZipArchive archive = new ZipArchive(result, ZipArchiveMode.Read))
                 {
-                    string pathVersion = version.Replace('.', '_');
-                    string destPath = $"{_storePath}\\{name}\\{pathVersion}\\";
-
                     foreach(ZipArchiveEntry entry in archive.Entries)
                     {
                         FileInfo info = new FileInfo($"{destPath}{entry.FullName}");
@@ -79,6 +89,8 @@ namespace HtmlDocGenerator
                         Console.WriteLine($"Extracted '{entry.FullName}' - {entry.Length}  ({entry.CompressedLength} compressed) bytes");
                     }
                 }
+
+                return destPath;
             }
         }
     }

@@ -8,6 +8,8 @@ namespace HtmlDocGenerator
 {
     public class DocObject
     {
+        string _name;
+
         public DocObject(string name, DocObjectType type)
         {
             Name = name;
@@ -28,11 +30,23 @@ namespace HtmlDocGenerator
             return $"{Name} - {Type} - Members: {Members.Count}";
         }
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                HtmlName = _name.Replace("<", "&lt;").Replace(">", "&gt;");
+            }
+        }
+
+        public string HtmlName { get; private set; }
 
         public Dictionary<string, DocObject> Members { get; } = new Dictionary<string, DocObject>();
 
         public DocObjectType Type { get; set; }
+
+        public Type UnderlyingType { get; set; }
 
         public DocObject Parent { get; set; }
     }

@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
+	<template>docs\template.html</template>
+	
 	<definitions>
 		<def>src\Molten.Engine.xml</def>
 		<def>src\Molten.Font.xml</def>
@@ -12,6 +14,17 @@
 		<package>
 			<name>Newtonsoft.Json</name>
 			<version>13.0.1</version>
+			<framework>netstandard2.0</framework>
+		</package>
+		<package>
+			<name>Magick.NET.Core</name>
+			<version>12.1.0</version>
+			<framework>netstandard20</framework>
+		</package>
+		<package>
+			<name>Magick.NET-Q8-AnyCPU</name>
+			<version>12.1.0</version>
+			<framework>netstandard20</framework>
 		</package>
 	</nuget>
 </config>

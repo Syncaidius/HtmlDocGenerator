@@ -45,10 +45,33 @@ namespace HtmlDocGenerator
             return doc;
         }
 
-        public void ScanAssembly(DocData data, Assembly assembly)
+        public void ScanAssembly(DocData doc, Assembly assembly)
         {
-            //Type[] aTypes = assembly.GetExportedTypes();
+            try
+            {
+                Console.WriteLine($"Retrieving type list from '{doc.Assembly.Name}'");
+                Type[] aTypes = assembly.GetExportedTypes();
+                Console.WriteLine($"Retrieved {aTypes.Length} public types from '{doc.Assembly.Name}'");
 
+                foreach (Type t in aTypes)
+                {
+                    DocObjectType objType = DocObjectType.None;
+                    if (t.IsValueType)
+                        objType = t.IsEnum ? DocObjectType.Enum : DocObjectType.Struct;
+                    else
+                        objType = DocObjectType.Class;
+
+                    DocObject obj = ParseTypeName(doc, t.FullName, objType);
+                    obj.UnderlyingType = t;
+
+                    if (t.IsGenericType)
+                        obj.Name = ParseTypeName(t);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to retrieve public types from '{doc.Assembly.Name}': {ex.Message}");
+            }
         }
 
         private void ParseNode(DocData doc, XmlNode xmlNode, DocNode docNode)
@@ -64,6 +87,10 @@ namespace HtmlDocGenerator
 
                 case "member":
                     ParseMemberNode(doc, xmlNode, docNode);
+                    break;
+
+                case "summary":
+                    docNode.Summary = xmlNode.InnerText;
                     break;
             }
 
@@ -84,20 +111,46 @@ namespace HtmlDocGenerator
             if (attName == null)
                 return;
 
-            string memberName = attName.Value;
-            string typeKey = memberName.Substring(0, 1);
-            DocObjectType objectType = DocObjectType.None;
+            string typeName = attName.Value;
+            string typeKey = typeName.Substring(0, 1);
+            DocObjectType objectType;
 
             if (!_typeKeys.TryGetValue(typeKey, out objectType))
                 return;
 
-            memberName = memberName.Substring(2, memberName.Length - 2);
-            string[] mParts = memberName.Split('.');
+            typeName = typeName.Substring(2, typeName.Length - 2);
+
+            ParseTypeName(doc, typeName, objectType);
+        }
+
+        private string ParseTypeName(Type t)
+        {
+            string[] gParts = t.Name.Split('`');
+            string name = gParts[0];
+            Type[] gTypes = t.GetGenericArguments();
+
+            if (gTypes.Length > 0)
+            {
+                name += '<';
+                for (int i = 0; i < gTypes.Length; i++)
+                {
+                    Type gType = gTypes[i];
+                    name += $"{(i == 0 ? "" : ", ")}{ParseTypeName(gType)}";
+                }
+                name += '>';
+            }
+
+            return name;
+        }
+
+        private DocObject ParseTypeName(DocData doc, string typeName, DocObjectType objectType)
+        {
+            string[] mParts = typeName.Split('.');
 
             // Breakdown the member name into parts so we can put the member inside the correct namespace or type.
 
             DocObject parent = doc;
-            for(int i = 0; i < mParts.Length; i++)
+            for (int i = 0; i < mParts.Length; i++)
             {
                 string part = mParts[i];
 
@@ -111,12 +164,14 @@ namespace HtmlDocGenerator
                 }
                 else
                 {
-                    if(newObjType != DocObjectType.None)
+                    if (newObjType != DocObjectType.None)
                         obj.Type = newObjType;
                 }
 
                 parent = obj;
             }
+
+            return parent;
         }
     }
 }

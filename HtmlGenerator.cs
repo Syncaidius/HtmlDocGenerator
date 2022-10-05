@@ -59,7 +59,7 @@ namespace HtmlDocGenerator
                 html += $"<h4>{ns}</h4>";
                 List<DocObject> objects = namespaceList[ns];
                 foreach (DocObject obj in objects)
-                    html += $"{obj.Name}<br/>";
+                    html += $"{obj.HtmlName}<br/>{Environment.NewLine}";
             }
 
             return html;
@@ -68,7 +68,7 @@ namespace HtmlDocGenerator
         private void TranslateNamespace(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Have we hit a non-namespace object?
-            if (obj.Type == DocObjectType.UnspecifiedType)
+            if (obj.Type == DocObjectType.Class || obj.Type == DocObjectType.Enum || obj.Type == DocObjectType.Struct)
             {
                 if (!namespaceList.TryGetValue(ns, out List<DocObject> objects))
                 {
