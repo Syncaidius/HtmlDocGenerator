@@ -10,10 +10,10 @@ namespace HtmlDocGenerator
 {
     public class HtmlGenerator
     {
-        public void Generate(DocData doc, string templatePath, string destPath)
-        {
-            destPath = $"{destPath}{doc.Assembly.Name}.html";
+        string _templateHtml;
 
+        public HtmlGenerator(string templatePath)
+        {
             if (!File.Exists(templatePath))
             {
                 Console.WriteLine($"Template not found: {templatePath}");
@@ -21,17 +21,69 @@ namespace HtmlDocGenerator
             }
 
             // Read template html file.
-            string html = "";
             using (FileStream stream = new FileStream(templatePath, FileMode.Open, FileAccess.Read))
             {
                 using (StreamReader reader = new StreamReader(stream))
                 {
-                    html = reader.ReadToEnd();
+                    _templateHtml = reader.ReadToEnd();
+                    IsTemplateValid = true;
                 }
             }
+        }
 
-            string docHtml = Translate(doc);
-            html = html.Replace("[BUILD-CONTENT]", docHtml);
+        /// <summary>
+        /// Generates an index page listing all of the available namespaces in the documented assemblies.
+        /// </summary>
+        /// <param name="docs"></param>
+        /// <param name="indexPath"></param>
+        public void Generate(List<DocData> docs, string destPath, string indexPath)
+        {
+            Dictionary<string, List<DocObject>> namespaceList = new Dictionary<string, List<DocObject>>();
+            foreach (DocData doc in docs)
+            {
+                foreach (DocObject obj in doc.Members.Values)
+                    Translate(obj, "", namespaceList);
+            }
+
+            // Output namespaces
+            string docHtml = "";
+            List<string> nsList = namespaceList.Keys.ToList();
+            nsList.Sort();
+
+            foreach (string ns in namespaceList.Keys)
+            {
+                docHtml += $"<a href=\"docs\\{ns.Replace('.', '_')}.html\">{ns}</a><br/>";
+                GenerateObjectIndexPage(ns, namespaceList[ns], destPath);
+            }
+
+            string html = _templateHtml.Replace("[BUILD-CONTENT]", docHtml);
+
+            // Output final html to destPath
+            using (FileStream stream = new FileStream(indexPath, FileMode.Create, FileAccess.Write))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    writer.Write(html);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generates an index page listing all of the types within a namespace.
+        /// </summary>
+        /// <param name="namespaceName"></param>
+        /// <param name="objList"></param>
+        /// <param name="destPath"></param>
+        private void GenerateObjectIndexPage(string namespaceName, IEnumerable<DocObject> objList, string destPath)
+        {
+            destPath = $"{destPath}{namespaceName.Replace('.', '_')}.html";
+            string docHtml = $"<h2>{namespaceName} Namespace</h2>{Environment.NewLine}";
+
+
+            foreach (DocObject obj in objList)
+                docHtml += $"{obj.HtmlName}<br/>{Environment.NewLine}";
+
+            string html = _templateHtml.Replace("[BUILD-CONTENT]", docHtml);
 
             // Output final html to destPath
             using (FileStream stream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
@@ -43,29 +95,7 @@ namespace HtmlDocGenerator
             }
         }
 
-        private string Translate(DocData doc)
-        {
-            string html = $"<h1>{doc.Assembly.Name}</h1>";
-            html += "<hr/>";
-
-            // Build namespace list
-            Dictionary<string, List<DocObject>> namespaceList = new Dictionary<string, List<DocObject>>();
-            foreach (DocObject obj in doc.Members.Values)
-                TranslateNamespace(obj, "", namespaceList);
-
-            // Output namespaces and their objects
-            foreach(string ns in namespaceList.Keys)
-            {
-                html += $"<h4>{ns}</h4>";
-                List<DocObject> objects = namespaceList[ns];
-                foreach (DocObject obj in objects)
-                    html += $"{obj.HtmlName}<br/>{Environment.NewLine}";
-            }
-
-            return html;
-        }
-
-        private void TranslateNamespace(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)
+        private void Translate(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Have we hit a non-namespace object?
             if (obj.Type == DocObjectType.Class || obj.Type == DocObjectType.Enum || obj.Type == DocObjectType.Struct)
@@ -87,8 +117,10 @@ namespace HtmlDocGenerator
                 ns += obj.Name;
 
                 foreach (DocObject member in obj.Members.Values)
-                    TranslateNamespace(member, ns, namespaceList);
+                    Translate(member, ns, namespaceList);
             }
         }
+
+        public bool IsTemplateValid { get; }
     }
 }

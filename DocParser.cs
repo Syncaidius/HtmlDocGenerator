@@ -49,9 +49,9 @@ namespace HtmlDocGenerator
         {
             try
             {
-                Console.WriteLine($"Retrieving type list from '{doc.Assembly.Name}'");
+                Console.WriteLine($"Retrieving type list from '{doc.AssemblyName}'");
                 Type[] aTypes = assembly.GetExportedTypes();
-                Console.WriteLine($"Retrieved {aTypes.Length} public types from '{doc.Assembly.Name}'");
+                Console.WriteLine($"Retrieved {aTypes.Length} public types from '{doc.AssemblyName}'");
 
                 foreach (Type t in aTypes)
                 {
@@ -70,7 +70,7 @@ namespace HtmlDocGenerator
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to retrieve public types from '{doc.Assembly.Name}': {ex.Message}");
+                Console.WriteLine($"Failed to retrieve public types from '{doc.AssemblyName}': {ex.Message}");
             }
         }
 
@@ -82,7 +82,7 @@ namespace HtmlDocGenerator
             {
                 case "assembly":
                     XmlNode aName = xmlNode["name"];
-                    doc.Assembly = new DocAssembly(aName.InnerText);
+                    doc.AssemblyName = aName.InnerText;
                     break;
 
                 case "member":

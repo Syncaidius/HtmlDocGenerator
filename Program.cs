@@ -26,8 +26,12 @@ namespace MyApp // Note: actual namespace depends on the project name.
         private static void Run(string[] args)
         {
             GeneratorConfig config = GeneratorConfig.Load("config.xml");
+            HtmlGenerator generator = new HtmlGenerator(config.Template);
+
+            if (!generator.IsTemplateValid)
+                return;
+
             DocParser parser = new DocParser();
-            HtmlGenerator generator = new HtmlGenerator();
             _nuget = new NugetDownloader(PACKAGE_STORE_PATH);
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -35,12 +39,8 @@ namespace MyApp // Note: actual namespace depends on the project name.
             foreach (NugetDefinition nd in config.Packages)
                 LoadNugetPackage(nd);
 
-            // Check if template exists.
-            if (!File.Exists(config.Template))
-            {
-                Console.WriteLine($"Index.html template not found: {config.Template}");
-                return;
-            }
+            FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
+            List<DocData> docs = new List<DocData>();
 
             foreach (string def in config.Definitions)
             {
@@ -55,14 +55,14 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 using (FileStream stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read))
                     doc = parser.ParseXml(stream);
 
-                Assembly assembly = LoadAssembly($"{info.Directory}\\{doc.Assembly.Name}.dll");
-                if (assembly != null)
-                    parser.ScanAssembly(doc, assembly);
+                doc.Assembly = LoadAssembly($"{info.Directory}\\{doc.AssemblyName}.dll");
+                if (doc.Assembly != null)
+                    parser.ScanAssembly(doc, doc.Assembly);
 
-                FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
-
-                generator.Generate(doc, config.Template, $"{exeInfo.DirectoryName}\\docs\\");
+                docs.Add(doc);
             }
+
+            generator.Generate(docs, $"{exeInfo.DirectoryName}\\docs\\", $"{exeInfo.DirectoryName}\\index.html");
         }
 
         private static void LoadNugetPackage(NugetDefinition nd)

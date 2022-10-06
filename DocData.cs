@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,18 +9,13 @@ namespace HtmlDocGenerator
 {
     public class DocData : DocObject
     {
-        public DocData() : base("doc", DocObjectType.None) { }
-
-        public DocAssembly Assembly { get; set; }
-    }
-
-    public class DocAssembly
-    {
-        public string Name { get; set; }
-
-        public DocAssembly(string name)
+        public DocData() : base(null, "doc", DocObjectType.None)
         {
-            Name = name;
+            ParentDoc = this;
         }
+
+        public string AssemblyName { get; set; }
+
+        public Assembly Assembly { get; set; }
     }
 }

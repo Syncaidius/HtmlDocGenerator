@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,15 +11,16 @@ namespace HtmlDocGenerator
     {
         string _name;
 
-        public DocObject(string name, DocObjectType type)
+        public DocObject(DocData parent, string name, DocObjectType type)
         {
+            ParentDoc = parent;
             Name = name;
             Type = type;
         }
 
         public DocObject AddMember(string name, DocObjectType type)
         {
-            DocObject member = new DocObject(name, type);
+            DocObject member = new DocObject(ParentDoc, name, type);
             member.Parent = this;
 
             Members.Add(name, member);
@@ -49,6 +51,8 @@ namespace HtmlDocGenerator
         public Type UnderlyingType { get; set; }
 
         public DocObject Parent { get; set; }
+
+        public DocData ParentDoc { get; protected set; }
     }
 
     public enum DocObjectType
