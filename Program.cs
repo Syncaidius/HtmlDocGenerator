@@ -26,7 +26,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
         private static void Run(string[] args)
         {
             GeneratorConfig config = GeneratorConfig.Load("config.xml");
-            HtmlGenerator generator = new HtmlGenerator(config.Template);
+            HtmlGenerator generator = new HtmlGenerator(config);
 
             if (!generator.IsTemplateValid)
                 return;
@@ -62,7 +62,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 docs.Add(doc);
             }
 
-            generator.Generate(docs, $"{exeInfo.DirectoryName}\\docs\\", $"{exeInfo.DirectoryName}\\index.html");
+            generator.Generate(docs, $"{exeInfo.DirectoryName}\\docs\\", $"{exeInfo.DirectoryName}\\docs\\index.html");
         }
 
         private static void LoadNugetPackage(NugetDefinition nd)

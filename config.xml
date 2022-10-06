@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
 	<template>docs\template.html</template>
+
+	<index>
+		<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
+	</index>
 	
 	<definitions>
 		<def>src\Molten.Engine.xml</def>

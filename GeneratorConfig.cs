@@ -10,15 +10,24 @@ namespace HtmlDocGenerator
 {
     public class GeneratorConfig
     {
+        public class IndexConfig
+        {
+            public string Intro { get; set; }
+        }
+
         public string Template { get; protected set; }
+
         public List<string> Definitions { get; }
 
         public List<NugetDefinition> Packages {get;}
+
+        public IndexConfig Index { get; }
 
         public GeneratorConfig()
         {
             Definitions = new List<string>();
             Packages = new List<NugetDefinition>();
+            Index = new IndexConfig();
         }
 
         public static GeneratorConfig Load(string path)
@@ -52,6 +61,15 @@ namespace HtmlDocGenerator
                         Version = xVersion != null ? xVersion.InnerText : "",
                         Framework = xFramework != null ? xFramework.InnerText : ""
                     });
+                }
+
+                // Index config
+                XmlNode index = doc["config"]["index"];
+                if(index != null)
+                {
+                    XmlNode intro = index["intro"];
+                    if (intro != null)
+                        config.Index.Intro = intro.InnerText;
                 }
             }
 
