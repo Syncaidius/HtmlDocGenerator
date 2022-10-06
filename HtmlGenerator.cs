@@ -50,7 +50,7 @@ namespace HtmlDocGenerator
             List<string> nsList = namespaceList.Keys.ToList();
             nsList.Sort();
 
-            foreach (string ns in namespaceList.Keys)
+            foreach (string ns in nsList)
             {
                 docHtml += $"<a href=\"docs\\{ns.Replace('.', '_')}.html\">{ns}</a><br/>";
                 GenerateObjectIndexPage(ns, namespaceList[ns], destPath);
