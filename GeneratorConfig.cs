@@ -15,20 +15,25 @@ namespace HtmlDocGenerator
             public string Intro { get; set; }
         }
 
+        public class SummaryConfig
+        {
+            public int MaxLength { get; set; } = 300;
+
+            /// <summary>
+            /// Gets or sets the 'read more' text.
+            /// </summary>
+            public string ReadMore { get; set; } = "Read More";
+        }
+
         public string Template { get; protected set; }
 
-        public List<string> Definitions { get; }
+        public List<string> Definitions { get; } = new List<string>();
 
-        public List<NugetDefinition> Packages {get;}
+        public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
 
-        public IndexConfig Index { get; }
+        public IndexConfig Index { get; } = new IndexConfig();
 
-        public GeneratorConfig()
-        {
-            Definitions = new List<string>();
-            Packages = new List<NugetDefinition>();
-            Index = new IndexConfig();
-        }
+        public SummaryConfig Summary { get; } = new SummaryConfig();
 
         public static GeneratorConfig Load(string path)
         {
@@ -70,6 +75,22 @@ namespace HtmlDocGenerator
                     XmlNode intro = index["intro"];
                     if (intro != null)
                         config.Index.Intro = intro.InnerText;
+                }
+
+                // Summary config
+                XmlNode summary = doc["config"]["summary"];
+                if(summary != null)
+                {
+                    XmlNode sumMaxLength = summary["maxlength"];
+                    if(sumMaxLength != null)
+                    {
+                        if (int.TryParse(sumMaxLength.InnerText, out int maxLen))
+                            config.Summary.MaxLength = maxLen;
+                    }
+
+                    XmlNode sumReadMore = summary["readmore"];
+                    if(sumReadMore != null)
+                        config.Summary.ReadMore = sumReadMore.InnerText;
                 }
             }
 

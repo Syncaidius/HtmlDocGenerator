@@ -90,16 +90,17 @@ namespace HtmlDocGenerator
                     break;
 
                 case "summary":
-                    docNode.Summary = xmlNode.InnerText;
+                    if (docNode.Parent != null)
+                    {
+                        docNode.Parent.Object.Summary = xmlNode.InnerXml;
+                    }
                     break;
             }
 
             // Parse child nodes
             foreach(XmlNode child in xmlNode.ChildNodes)
             {
-                DocNode docChild = new DocNode();
-                docNode.Children.Add(docChild);
-
+                DocNode docChild = docNode.AddChild("");
                 ParseNode(doc, child, docChild);
             }
         }
@@ -120,11 +121,7 @@ namespace HtmlDocGenerator
 
             typeName = typeName.Substring(2, typeName.Length - 2);
 
-            DocObject obj = ParseTypeName(doc, typeName, objectType);
-            if(obj.Type == DocObjectType.UnspecifiedType)
-            {
-                // TODO parse summary nodes.
-            }
+            docNode.Object = ParseTypeName(doc, typeName, objectType);
         }
 
         private string ParseTypeName(Type t)

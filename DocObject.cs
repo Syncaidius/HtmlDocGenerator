@@ -54,10 +54,7 @@ namespace HtmlDocGenerator
 
         public DocData ParentDoc { get; protected set; }
 
-        /// <summary>
-        /// Gets the <see cref="DocNode"/> which represents the current <see cref="DocObject"/>.
-        /// </summary>
-        public DocNode Node { get; set; }
+        public string Summary { get; set; }
     }
 
     public enum DocObjectType

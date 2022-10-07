@@ -66,7 +66,12 @@ namespace HtmlDocGenerator
                 docHtml += "<tbody>";
                 foreach (DocObject obj in objList)
                 {
-                    string summary = string.IsNullOrWhiteSpace(obj.Node.Summary) ? "" : obj.Node.Summary;
+                    string summary = string.IsNullOrWhiteSpace(obj.Summary) ? "" : obj.Summary;
+                    if(summary.Length > _config.Summary.MaxLength)
+                    {
+                        summary = summary.Substring(0, _config.Summary.MaxLength);
+                        summary += $"...<a href=\"#\">{_config.Summary.ReadMore}</a>";
+                    }
 
                     docHtml += $"   <tr id=\"{nsEscaped}-{obj.HtmlName}\" class=\"sec-namespace-obj\">";
                     docHtml += $"       <td>{obj.HtmlName}</td>{Environment.NewLine}";

@@ -14,13 +14,16 @@ namespace HtmlDocGenerator
 
         public List<DocNode> Children { get; } = new List<DocNode>();
 
-        public string Summary { get; set; }
+        public DocObject Object { get; set; }
 
-        public DocNode AddChild<T>(string name)
+        public DocNode Parent { get; private set; }
+
+        public DocNode AddChild(string name)
         {
             DocNode child = new DocNode()
             {
                 Name = name,
+                Parent = this,
             };
 
             Children.Add(child);
