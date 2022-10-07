@@ -41,6 +41,18 @@ namespace HtmlDocGenerator
             int bufferSize = 31768;
             byte[] buffer = new byte[bufferSize];
 
+            string pathVersion = version.Replace('.', '_');
+            string destPath = $"{_storePath}\\{name}\\{pathVersion}\\";
+            string nuspecPath = $"{destPath}\\{name}.nuspec";
+
+
+            if (File.Exists(nuspecPath))
+            {
+                Console.WriteLine($"Found existing package for '{def.Name}'");
+                // TODO check for any missing package files by parsing .nuspec dependencies targetframework attribute with lib\\target framework folder name\\packageName.dll
+                return destPath;
+            }
+
             // TODO check if we've already downloaded the package.
 
             string packageUrl = $"{_apiUrl}{name}/{version}/{name}.{version}.nupkg";
@@ -70,9 +82,6 @@ namespace HtmlDocGenerator
                         Console.WriteLine($"Finished {name} - {version}: {totalBytesRead} / {byteCount} bytes");
                     }
                 }
-
-                string pathVersion = version.Replace('.', '_');
-                string destPath = $"{_storePath}\\{name}\\{pathVersion}\\";
 
                 // Unpack downloaded .nupkg file.
                 using (ZipArchive archive = new ZipArchive(result, ZipArchiveMode.Read))

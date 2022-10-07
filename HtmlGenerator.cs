@@ -61,13 +61,20 @@ namespace HtmlDocGenerator
                 docHtml += $"<span class=\"namespace-toggle\">{ns}</span><br/>"; //<a href=\"docs\\{nsEscaped}.html\">{ns}</a>
                 docHtml += "    <div class=\"sec-namespace-inner\">";
 
+                docHtml += "<table>";
+                docHtml += "<thead><tr><th class=\"col-type-name\"></th><th class=\"col-type-desc\"></th></tr></thead>";
+                docHtml += "<tbody>";
                 foreach (DocObject obj in objList)
                 {
-                    docHtml += $"   <div id=\"{nsEscaped}-{obj.HtmlName}\" class=\"sec-namespace-obj\">";
-                    docHtml += $"       {obj.HtmlName}<br/>{Environment.NewLine}";
-                    docHtml += "    </div>";
+                    string summary = string.IsNullOrWhiteSpace(obj.Node.Summary) ? "" : obj.Node.Summary;
+
+                    docHtml += $"   <tr id=\"{nsEscaped}-{obj.HtmlName}\" class=\"sec-namespace-obj\">";
+                    docHtml += $"       <td>{obj.HtmlName}</td>{Environment.NewLine}";
+                    docHtml += $"       <td>{summary}</td>{Environment.NewLine}";
+                    docHtml += "    </tr>";
                 }
 
+                docHtml += "</tbody></table>";
                 docHtml += "</div></div></br>";
 
                 

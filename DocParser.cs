@@ -120,7 +120,11 @@ namespace HtmlDocGenerator
 
             typeName = typeName.Substring(2, typeName.Length - 2);
 
-            ParseTypeName(doc, typeName, objectType);
+            DocObject obj = ParseTypeName(doc, typeName, objectType);
+            if(obj.Type == DocObjectType.UnspecifiedType)
+            {
+                // TODO parse summary nodes.
+            }
         }
 
         private string ParseTypeName(Type t)
