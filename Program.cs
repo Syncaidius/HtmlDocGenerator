@@ -26,11 +26,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
         private static void Run(string[] args)
         {
             GeneratorConfig config = GeneratorConfig.Load("config.xml");
-            HtmlGenerator generator = new HtmlGenerator(config);
-
-            if (!generator.IsTemplateValid)
+            if (!config.Validate())
                 return;
 
+            HtmlGenerator generator = new HtmlGenerator(config);
             DocParser parser = new DocParser();
             _nuget = new NugetDownloader(PACKAGE_STORE_PATH);
 

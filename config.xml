@@ -1,6 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
-	<template>docs\template.html</template>
+	<template>
+		<index>docs\template.html</index>
+		<object>docs\template_obj.html</object>
+	</template>
+
+	<icons>
+		<class>img/class.png</class>
+		<struct>img/struct.png</struct>
+		<enum></enum>
+		<interface></interface>
+		<method></method>
+		<property></property>
+		<field></field>
+		<event></event>
+	</icons>
 
 	<index>
 		<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>

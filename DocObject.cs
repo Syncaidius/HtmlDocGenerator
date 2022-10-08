@@ -48,11 +48,18 @@ namespace HtmlDocGenerator
 
         public DocObjectType Type { get; set; }
 
+        public DocObjectSubType SubType { get; set; }
+
         public Type UnderlyingType { get; set; }
 
         public DocObject Parent { get; set; }
 
         public DocData ParentDoc { get; protected set; }
+
+        /// <summary>
+        /// Gets the Url to the page containing information about the current <see cref="DocObject"/>.
+        /// </summary>
+        public string PageUrl { get; set; }
 
         public string Summary { get; set; }
     }
@@ -73,5 +80,16 @@ namespace HtmlDocGenerator
         Property = 7,
 
         Method = 8,
+    }
+
+    public enum DocObjectSubType
+    {
+        Class = 0,
+
+        Struct = 1,
+
+        Enum = 2,
+
+        Interface = 3,
     }
 }

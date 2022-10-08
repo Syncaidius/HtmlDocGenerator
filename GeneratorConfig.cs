@@ -15,6 +15,13 @@ namespace HtmlDocGenerator
             public string Intro { get; set; }
         }
 
+        public class TemplateConfig
+        {
+            public string Index { get; set; }
+
+            public string Object { get; set; }
+        }
+
         public class SummaryConfig
         {
             public int MaxLength { get; set; } = 300;
@@ -25,11 +32,16 @@ namespace HtmlDocGenerator
             public string ReadMore { get; set; } = "Read More";
         }
 
-        public string Template { get; protected set; }
+        public TemplateConfig Template { get; } = new TemplateConfig();
 
         public List<string> Definitions { get; } = new List<string>();
 
         public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
+
+        /// <summary>
+        /// Icon path stored by key name. The key name is taken from the XML tag name which defined the icon path in config.xml.
+        /// </summary>
+        public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
         public IndexConfig Index { get; } = new IndexConfig();
 
@@ -48,8 +60,16 @@ namespace HtmlDocGenerator
                 XmlNode defs = doc["config"]["definitions"];
                 XmlNode nugets = doc["config"]["nuget"];
                 XmlNode template = doc["config"]["template"];
+                if(template != null)
+                {
+                    XmlNode xIndex = template["index"];
+                    if (xIndex != null)
+                        config.Template.Index = xIndex.InnerText;
 
-                config.Template = template.InnerText;
+                    XmlNode xObject = template["object"];
+                    if (xObject != null)
+                        config.Template.Object = xObject.InnerText;
+                }
 
                 foreach (XmlNode child in defs.ChildNodes)
                     config.Definitions.Add(child.InnerText);
@@ -92,9 +112,34 @@ namespace HtmlDocGenerator
                     if(sumReadMore != null)
                         config.Summary.ReadMore = sumReadMore.InnerText;
                 }
+
+                // Icon config
+                XmlNode icons = doc["config"]["icons"];
+                if(icons != null)
+                {
+                    foreach (XmlNode iNode in icons.ChildNodes)
+                        config.Icons.Add(iNode.Name.ToLower(), iNode.InnerText);
+                }
             }
 
             return config;
+        }
+
+        public bool Validate()
+        {
+            if (!File.Exists(Template.Index))
+            {
+                Console.WriteLine($"Index page template not found: {Template.Index}");
+                return false;
+            }
+
+            if (!File.Exists(Template.Object))
+            {
+                Console.WriteLine($"Object page template not found: {Template.Object}");
+                return false;
+            }
+
+            return true;
         }
     }
 }
