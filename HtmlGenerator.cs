@@ -46,6 +46,35 @@ namespace HtmlDocGenerator
         /// <param name="indexPath"></param>
         public void Generate(List<DocData> docs, string destPath, string indexPath)
         {
+            string indexHtml = BuildIndexTree(docs);
+            string html = _templateHtml.Replace("[BUILD-INDEX]", indexHtml);
+
+
+            string scriptHtml = @"<script>
+                                var toggler = document.getElementsByClassName(""namespace-toggle"");
+                                var i;
+
+                                for (i = 0; i < toggler.length; i++) {
+                                  toggler[i].addEventListener(""click"", function() {
+                                        this.parentElement.querySelector("".sec-namespace-inner"").classList.toggle(""sec-active"");
+                                        this.classList.toggle(""namespace-toggle-down"");
+                                      });
+                                }
+                            </script>";
+            html = html.Replace("[SCRIPTS]", scriptHtml);
+
+            // Output final html to destPath
+            using (FileStream stream = new FileStream(indexPath, FileMode.Create, FileAccess.Write))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    writer.Write(html);
+                }
+            }
+        }
+
+        private string BuildIndexTree(List<DocData> docs)
+        {
             Dictionary<string, List<DocObject>> namespaceList = new Dictionary<string, List<DocObject>>();
             foreach (DocData doc in docs)
             {
@@ -54,7 +83,7 @@ namespace HtmlDocGenerator
             }
 
             // Output namespaces
-            string docHtml = $"<p>{_config.Index.Intro}</p>";
+            string html = $"<p>{_config.Index.Intro}</p>";
             List<string> nsList = namespaceList.Keys.ToList();
             nsList.Sort();
 
@@ -67,41 +96,17 @@ namespace HtmlDocGenerator
                 List<DocObject> objStructs = objList.Where(o => o.UnderlyingType.IsValueType && !o.UnderlyingType.IsEnum).ToList();
                 List<DocObject> objEnums = objList.Where(o => o.UnderlyingType.IsValueType && o.UnderlyingType.IsEnum).ToList();
 
-                docHtml += $"<div id=\"{nsEscaped}\" class=\"sec-namespace\">{_nl}";
-                docHtml += $"<span class=\"namespace-toggle\">{ns}</span><br/>{_nl}";
-                docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
-                docHtml += GenerateObjectIndex(nsEscaped, "Classes", "img/object.png", objClasses);
-                docHtml += GenerateObjectIndex(nsEscaped, "Structs", "", objStructs);
-                docHtml += GenerateObjectIndex(nsEscaped, "Interfaces", "", objInterfaces);
-                docHtml += GenerateObjectIndex(nsEscaped, "Enums", "", objEnums);
-                docHtml += $"</div></div><br/>{_nl}";
-                
-                GenerateObjectIndexPage(ns, indexPath, objList, destPath);
+                html += $"<div id=\"{nsEscaped}\" class=\"sec-namespace\">{_nl}";
+                html += $"<span class=\"namespace-toggle\">{ns}</span><br/>{_nl}";
+                html += $"    <div class=\"sec-namespace-inner\">{_nl}";
+                html += GenerateObjectIndex(nsEscaped, "Classes", "img/object.png", objClasses);
+                html += GenerateObjectIndex(nsEscaped, "Structs", "", objStructs);
+                html += GenerateObjectIndex(nsEscaped, "Interfaces", "", objInterfaces);
+                html += GenerateObjectIndex(nsEscaped, "Enums", "", objEnums);
+                html += $"</div></div>{_nl}";
             }
 
-            //Add tree-view toggle JS script
-            docHtml += @"<script>
-                                var toggler = document.getElementsByClassName(""namespace-toggle"");
-                                var i;
-
-                                for (i = 0; i < toggler.length; i++) {
-                                  toggler[i].addEventListener(""click"", function() {
-                                        this.parentElement.querySelector("".sec-namespace-inner"").classList.toggle(""sec-active"");
-                                        this.classList.toggle(""namespace-toggle-down"");
-                                      });
-                                }
-                            </script>";
-
-            string html = _templateHtml.Replace("[BUILD-CONTENT]", docHtml);
-
-            // Output final html to destPath
-            using (FileStream stream = new FileStream(indexPath, FileMode.Create, FileAccess.Write))
-            {
-                using (StreamWriter writer = new StreamWriter(stream))
-                {
-                    writer.Write(html);
-                }
-            }
+            return html;
         }
 
         private string GenerateObjectIndex(string ns, string title, string iconUrl, List<DocObject> objList)
@@ -116,7 +121,6 @@ namespace HtmlDocGenerator
             docHtml += $"<table class=\"sec-obj-index\"><thead><tr>{_nl}";
             docHtml += $"<th class=\"col-type-icon\"></th>{_nl}";
             docHtml += $"<th class=\"col-type-name\"></th>{_nl}";
-            docHtml += $"<th class=\"col-type-desc\"></th>{_nl}";
             docHtml += $"</tr></thead><tbody>{_nl}";
             foreach (DocObject obj in objList)
             {
@@ -131,7 +135,6 @@ namespace HtmlDocGenerator
                 docHtml += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
                 docHtml += $"       <td>{iconHtml}</td>{_nl}";
                 docHtml += $"       <td>{obj.HtmlName}</td>{_nl}";
-                docHtml += $"       <td>{summary}</td>{_nl}";
                 docHtml += $"    </tr>{_nl}";
             }
 
