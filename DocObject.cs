@@ -10,6 +10,7 @@ namespace HtmlDocGenerator
     public class DocObject
     {
         string _name;
+        Type _type;
 
         public DocObject(DocData parent, string name, DocObjectType type)
         {
@@ -50,7 +51,22 @@ namespace HtmlDocGenerator
 
         public DocObjectSubType SubType { get; set; }
 
-        public Type UnderlyingType { get; set; }
+        public Type UnderlyingType
+        {
+            get => _type;
+            set
+            {
+                if(_type != value)
+                {
+                    _type = value;
+
+                    if (_type == null)
+                        TypeMembers = null;
+                    else
+                        TypeMembers = _type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                }
+            }
+        }
 
         public DocObject Parent { get; set; }
 
@@ -62,6 +78,8 @@ namespace HtmlDocGenerator
         public string PageUrl { get; set; }
 
         public string Summary { get; set; }
+
+        public MemberInfo[] TypeMembers { get; private set; }
     }
 
     public enum DocObjectType

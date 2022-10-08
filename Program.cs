@@ -29,7 +29,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
             if (!config.Validate())
                 return;
 
-            HtmlGenerator generator = new HtmlGenerator(config);
+            HtmlDocGenerator.HtmlDocGenerator generator = new HtmlDocGenerator.HtmlDocGenerator(config);
             DocParser parser = new DocParser();
             _nuget = new NugetDownloader(PACKAGE_STORE_PATH);
 

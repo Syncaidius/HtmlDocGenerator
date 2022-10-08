@@ -9,19 +9,30 @@ using System.Xml.Serialization;
 
 namespace HtmlDocGenerator
 {
-    public class HtmlGenerator
+    public class HtmlDocGenerator
     {
         string _templateIndexHtml;
         string _templateObjHtml;
         GeneratorConfig _config;
+
+        List<ObjectSectionGenerator> _objSectionGens;
 
         /// <summary>
         /// New Line.
         /// </summary>
         string _nl;
 
-        public HtmlGenerator(GeneratorConfig config)
+        public HtmlDocGenerator(GeneratorConfig config)
         {
+            // Instantiate object section generators
+            _objSectionGens = new List<ObjectSectionGenerator>();
+            List<Type> secGenTypes = ReflectionHelper.FindType<ObjectSectionGenerator>();
+            foreach(Type t in secGenTypes)
+            {
+                ObjectSectionGenerator sGen = Activator.CreateInstance(t) as ObjectSectionGenerator;
+                _objSectionGens.Add(sGen);
+            }
+
             _nl = Environment.NewLine;
             _config = config;
 
@@ -211,10 +222,21 @@ namespace HtmlDocGenerator
 
         private void GenerateObjectPage(string destPath, string ns, DocObject obj)
         {
+            string docHtml = "";
+
+            foreach (ObjectSectionGenerator sGen in _objSectionGens)
+            {
+                docHtml += sGen.Generate(obj);
+                docHtml += "<br/>";
+            }
+
             string html = _templateObjHtml
                 .Replace("[NAMESPACE]", ns)
                 .Replace("[TITLE]", obj.HtmlName)
-                .Replace("[ICON]", GetIconHtml(obj, "../"));
+                .Replace("[ICON]", GetIconHtml(obj, "../"))
+                .Replace("[SUMMARY]", obj.Summary)
+                .Replace("[BUILD-CONTENT]", docHtml);
+
 
             using (FileStream stream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
             {
