@@ -62,15 +62,9 @@ namespace HtmlDocGenerator
         None = 0,
          
         /// <summary>
-        /// A valid type, it's unknown whether it is a class, struct or enum.
+        /// A valid object type.
         /// </summary>
-        UnspecifiedType = 1,
-
-        Class = 2,
-
-        Struct = 3,
-
-        Enum = 4,
+        ObjectType = 1,
 
         Event = 5,
 

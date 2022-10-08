@@ -13,8 +13,14 @@ namespace HtmlDocGenerator
         string _templateHtml;
         GeneratorConfig _config;
 
+        /// <summary>
+        /// New Line.
+        /// </summary>
+        string _nl;
+
         public HtmlGenerator(GeneratorConfig config)
         {
+            _nl = Environment.NewLine;
             _config = config;
             if (!File.Exists(_config.Template))
             {
@@ -55,33 +61,20 @@ namespace HtmlDocGenerator
             foreach (string ns in nsList)
             {
                 string nsEscaped = ns.Replace('.', '_');
-                List<DocObject> objList = namespaceList[ns];
+                List<DocObject> objList = namespaceList[ns].Where(o => o.UnderlyingType != null).ToList();
+                List<DocObject> objClasses = objList.Where(o => o.UnderlyingType.IsClass).ToList();
+                List<DocObject> objInterfaces = objList.Where(o => o.UnderlyingType.IsInterface).ToList();
+                List<DocObject> objStructs = objList.Where(o => o.UnderlyingType.IsValueType && !o.UnderlyingType.IsEnum).ToList();
+                List<DocObject> objEnums = objList.Where(o => o.UnderlyingType.IsValueType && o.UnderlyingType.IsEnum).ToList();
 
-                docHtml += $"<div id=\"{nsEscaped}\" class=\"sec-namespace\">";
-                docHtml += $"<span class=\"namespace-toggle\">{ns}</span><br/>"; //<a href=\"docs\\{nsEscaped}.html\">{ns}</a>
-                docHtml += "    <div class=\"sec-namespace-inner\">";
-
-                docHtml += "<table>";
-                docHtml += "<thead><tr><th class=\"col-type-name\"></th><th class=\"col-type-desc\"></th></tr></thead>";
-                docHtml += "<tbody>";
-                foreach (DocObject obj in objList)
-                {
-                    string summary = string.IsNullOrWhiteSpace(obj.Summary) ? "" : obj.Summary;
-                    if(summary.Length > _config.Summary.MaxLength)
-                    {
-                        summary = summary.Substring(0, _config.Summary.MaxLength);
-                        summary += $"...<a href=\"#\">{_config.Summary.ReadMore}</a>";
-                    }
-
-                    docHtml += $"   <tr id=\"{nsEscaped}-{obj.HtmlName}\" class=\"sec-namespace-obj\">";
-                    docHtml += $"       <td>{obj.HtmlName}</td>{Environment.NewLine}";
-                    docHtml += $"       <td>{summary}</td>{Environment.NewLine}";
-                    docHtml += "    </tr>";
-                }
-
-                docHtml += "</tbody></table>";
-                docHtml += "</div></div></br>";
-
+                docHtml += $"<div id=\"{nsEscaped}\" class=\"sec-namespace\">{_nl}";
+                docHtml += $"<span class=\"namespace-toggle\">{ns}</span><br/>{_nl}";
+                docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
+                docHtml += GenerateObjectIndex(nsEscaped, "Classes", "img/object.png", objClasses);
+                docHtml += GenerateObjectIndex(nsEscaped, "Structs", "", objStructs);
+                docHtml += GenerateObjectIndex(nsEscaped, "Interfaces", "", objInterfaces);
+                docHtml += GenerateObjectIndex(nsEscaped, "Enums", "", objEnums);
+                docHtml += $"</div></div><br/>{_nl}";
                 
                 GenerateObjectIndexPage(ns, indexPath, objList, destPath);
             }
@@ -111,6 +104,42 @@ namespace HtmlDocGenerator
             }
         }
 
+        private string GenerateObjectIndex(string ns, string title, string iconUrl, List<DocObject> objList)
+        {
+            if (objList.Count == 0)
+                return "";
+
+            string docHtml = $"<div id=\"{ns}{title}\" class=\"sec-namespace sec-namespace-noleft\">{_nl}";
+            docHtml += $"<span class=\"namespace-toggle\">{title}</span><br/>{_nl}";
+            docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
+
+            docHtml += $"<table class=\"sec-obj-index\"><thead><tr>{_nl}";
+            docHtml += $"<th class=\"col-type-icon\"></th>{_nl}";
+            docHtml += $"<th class=\"col-type-name\"></th>{_nl}";
+            docHtml += $"<th class=\"col-type-desc\"></th>{_nl}";
+            docHtml += $"</tr></thead><tbody>{_nl}";
+            foreach (DocObject obj in objList)
+            {
+                string summary = string.IsNullOrWhiteSpace(obj.Summary) ? "" : obj.Summary;
+                if (_config.Summary.MaxLength > 0 && summary.Length > _config.Summary.MaxLength)
+                {
+                    summary = summary.Substring(0, _config.Summary.MaxLength);
+                    summary += $"...<a href=\"#\">{_config.Summary.ReadMore}</a>{_nl}";
+                }
+
+                string iconHtml = iconUrl.Length > 0 ? $"<img src=\"{iconUrl}\"/>" : "&nbsp;";
+                docHtml += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
+                docHtml += $"       <td>{iconHtml}</td>{_nl}";
+                docHtml += $"       <td>{obj.HtmlName}</td>{_nl}";
+                docHtml += $"       <td>{summary}</td>{_nl}";
+                docHtml += $"    </tr>{_nl}";
+            }
+
+            docHtml += $"</tbody></table>{_nl}";
+            docHtml += $"</div></div>{_nl}";
+            return docHtml;
+        }
+
         /// <summary>
         /// Generates an index page listing all of the types within a namespace.
         /// </summary>
@@ -121,10 +150,10 @@ namespace HtmlDocGenerator
         {
             destPath = $"{destPath}{namespaceName.Replace('.', '_')}.html";
             string docHtml = $"<a href=\"{indexPath.Replace("\\", "/")}\">Home</a>";
-            docHtml += $"<h2>{namespaceName} Namespace</h2>{Environment.NewLine}";
+            docHtml += $"<h2>{namespaceName} Namespace</h2>{_nl}";
 
             foreach (DocObject obj in objList)
-                docHtml += $"{obj.HtmlName}<br/>{Environment.NewLine}";
+                docHtml += $"{obj.HtmlName}<br/>{_nl}";
 
             string html = _templateHtml.Replace("[BUILD-CONTENT]", docHtml);
 
@@ -141,7 +170,7 @@ namespace HtmlDocGenerator
         private void Translate(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Have we hit a non-namespace object?
-            if (obj.Type == DocObjectType.Class || obj.Type == DocObjectType.Enum || obj.Type == DocObjectType.Struct)
+            if (obj.Type == DocObjectType.ObjectType)
             {
                 if (!namespaceList.TryGetValue(ns, out List<DocObject> objects))
                 {

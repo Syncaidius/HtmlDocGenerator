@@ -13,7 +13,7 @@ namespace HtmlDocGenerator
     {
         Dictionary<string, DocObjectType> _typeKeys = new Dictionary<string, DocObjectType>()
         {
-            ["T"] = DocObjectType.UnspecifiedType,
+            ["T"] = DocObjectType.ObjectType,
             ["E"] = DocObjectType.Event,
             ["P"] = DocObjectType.Property,
             ["F"] = DocObjectType.Field,
@@ -55,12 +55,7 @@ namespace HtmlDocGenerator
 
                 foreach (Type t in aTypes)
                 {
-                    DocObjectType objType = DocObjectType.None;
-                    if (t.IsValueType)
-                        objType = t.IsEnum ? DocObjectType.Enum : DocObjectType.Struct;
-                    else
-                        objType = DocObjectType.Class;
-
+                    DocObjectType objType = DocObjectType.ObjectType;
                     DocObject obj = ParseTypeName(doc, t.FullName, objType);
                     obj.UnderlyingType = t;
 
