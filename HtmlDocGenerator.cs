@@ -227,7 +227,6 @@ namespace HtmlDocGenerator
             foreach (ObjectSectionGenerator sGen in _objSectionGens)
             {
                 docHtml += sGen.Generate(obj);
-                docHtml += "<br/>";
             }
 
             string html = _templateObjHtml

@@ -7,35 +7,31 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
-    public class ObjectPropertyIndexGenerator : ObjectSectionGenerator
+    public class ObjectPropertyIndexGenerator : ObjectMemberSectionGenerator<PropertyInfo>
     {
-        protected override string OnGenerate(DocObject obj)
+        protected override string OnGenerateMemberSection(DocObject obj, IEnumerable<PropertyInfo> members)
         {
             string html = "";
-            Html(ref html, "<table><thead><tr>");
-            Html(ref html, $"   <th class=\"obj-section-title\">Properties</th>");
-            Html(ref html, $"   <th>&nbsp</th>");
-            Html(ref html, "</tr></thead><tbody>");
 
-            foreach (MemberInfo mInfo in obj.TypeMembers)
+            foreach (PropertyInfo info in members)
             {
-                if (mInfo.MemberType != MemberTypes.Property)
-                    continue;
-
                 Html(ref html, "<tr>");
-                Html(ref html, $"   <td>{mInfo.Name}</td>");
+                Html(ref html, $"   <td>{info.Name}</td>");
 
                 string mSummary = "&nbsp;";
-                if (obj.Members.TryGetValue(mInfo.Name, out DocObject memObj))
+                if (obj.Members.TryGetValue(info.Name, out DocObject memObj))
                     mSummary = memObj.Summary;
 
                 Html(ref html, $"<td>{mSummary}</td>");
                 Html(ref html, $"</tr>");
             }
 
-            html += "</tbody></table>";
-
             return html;
+        }
+
+        protected override string GetTitle()
+        {
+            return "Properties";
         }
     }
 }

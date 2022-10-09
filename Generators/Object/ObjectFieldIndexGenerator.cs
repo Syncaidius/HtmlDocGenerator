@@ -7,35 +7,31 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
-    public class ObjectFieldIndexGenerator : ObjectSectionGenerator
+    public class ObjectFieldIndexGenerator : ObjectMemberSectionGenerator<FieldInfo>
     {
-        protected override string OnGenerate(DocObject obj)
+        protected override string OnGenerateMemberSection(DocObject obj, IEnumerable<FieldInfo> members)
         {
             string html = "";
-            Html(ref html, "<table><thead><tr>");
-            Html(ref html, $"   <th class=\"obj-section-title\">Fields</th>");
-            Html(ref html, $"   <th>&nbsp</th>");
-            Html(ref html, "</tr></thead><tbody>");
 
-            foreach (MemberInfo mInfo in obj.TypeMembers)
+            foreach (FieldInfo info in members)
             {
-                if (mInfo.MemberType != MemberTypes.Field)
-                    continue;
-
                 Html(ref html, "<tr>");
-                Html(ref html, $"   <td>{mInfo.Name}</td>");
+                Html(ref html, $"   <td>{info.Name}</td>");
 
                 string mSummary = "&nbsp;";
-                if (obj.Members.TryGetValue(mInfo.Name, out DocObject memObj))
+                if (obj.Members.TryGetValue(info.Name, out DocObject memObj))
                     mSummary = memObj.Summary;
 
                 Html(ref html, $"<td>{mSummary}</td>");
                 Html(ref html, $"</tr>");
             }
 
-            html += "</tbody></table>";
-
             return html;
+        }
+
+        protected override string GetTitle()
+        {
+            return "Fields";
         }
     }
 }
