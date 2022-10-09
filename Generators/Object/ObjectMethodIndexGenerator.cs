@@ -17,8 +17,19 @@ namespace HtmlDocGenerator
                 if (info.IsSpecialName)
                     continue;
 
+                string paramString = "";
+                ParameterInfo[] parameters = info.GetParameters();
+                for(int i = 0; i < parameters.Length; i++)
+                {
+                    ParameterInfo pi = parameters[i];
+                    if (i > 0)
+                        paramString += ", ";
+
+                    paramString += HtmlHelper.GetHtmlName(pi.ParameterType);
+                }
+
                 Html(ref html, "<tr>");
-                Html(ref html, $"   <td>{info.Name}</td>");
+                Html(ref html, $"   <td>{info.Name}({paramString})</td>");
 
                 string mSummary = "&nbsp;";
                 if (obj.Members.TryGetValue(info.Name, out DocObject memObj))

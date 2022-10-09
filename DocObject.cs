@@ -39,7 +39,7 @@ namespace HtmlDocGenerator
             set
             {
                 _name = value;
-                HtmlName = _name.Replace("<", "&lt;").Replace(">", "&gt;");
+                HtmlName = HtmlHelper.GetHtmlName(_name);
             }
         }
 

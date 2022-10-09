@@ -16,13 +16,16 @@ namespace HtmlDocGenerator
         protected override string OnGenerate(DocObject obj)
         {
             IEnumerable<T> mInfo = obj.TypeMembers.Where(x => (x as T) != null).Cast<T>();
+           
             string html = "";
 
             if (mInfo.Count() > 0)
-            {                
+            {
+                mInfo = mInfo.OrderBy(x => x.Name);
+
                 Html(ref html, "<table><thead><tr>");
                 Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
-                Html(ref html, $"   <th>&nbsp</th>");
+                Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
                 Html(ref html, "</tr></thead><tbody>");
 
                 html += OnGenerateMemberSection(obj, mInfo);
