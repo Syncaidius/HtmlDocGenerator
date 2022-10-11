@@ -26,7 +26,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
         private static void Run(string[] args)
         {
-            GeneratorConfig config = GeneratorConfig.Load("config.xml");
+            HtmlContext config = HtmlContext.Load("config.xml");
             if (!config.Validate())
                 return;
 

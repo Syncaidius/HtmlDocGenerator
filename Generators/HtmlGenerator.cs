@@ -9,7 +9,6 @@ namespace HtmlDocGenerator
 {
     public abstract class HtmlGenerator
     {
-
         protected void Html(ref string html, string newHtml)
         {
             html += $"{newHtml}{Environment.NewLine}";

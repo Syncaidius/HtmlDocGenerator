@@ -13,7 +13,7 @@ namespace HtmlDocGenerator
     {
         string _templateIndexHtml;
         string _templateObjHtml;
-        GeneratorConfig _config;
+        HtmlContext _context;
 
         List<ObjectSectionGenerator> _objSectionGens;
 
@@ -22,7 +22,7 @@ namespace HtmlDocGenerator
         /// </summary>
         string _nl;
 
-        public HtmlDocGenerator(GeneratorConfig config)
+        public HtmlDocGenerator(HtmlContext config)
         {
             // Instantiate object section generators
             _objSectionGens = new List<ObjectSectionGenerator>();
@@ -34,10 +34,10 @@ namespace HtmlDocGenerator
             }
 
             _nl = Environment.NewLine;
-            _config = config;
+            _context = config;
 
             // Read template html file.
-            using (FileStream stream = new FileStream(_config.Template.Index, FileMode.Open, FileAccess.Read))
+            using (FileStream stream = new FileStream(_context.Template.Index, FileMode.Open, FileAccess.Read))
             {
                 using (StreamReader reader = new StreamReader(stream))
                 {
@@ -45,7 +45,7 @@ namespace HtmlDocGenerator
                 }
             }
 
-            using (FileStream stream = new FileStream(_config.Template.Object, FileMode.Open, FileAccess.Read))
+            using (FileStream stream = new FileStream(_context.Template.Object, FileMode.Open, FileAccess.Read))
             {
                 using (StreamReader reader = new StreamReader(stream))
                 {
@@ -148,7 +148,7 @@ namespace HtmlDocGenerator
         private string BuildIndexTree(List<DocData> docs, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Output namespaces
-            string html = $"<p>{_config.Index.Intro}</p>";
+            string html = $"<p>{_context.Index.Intro}</p>";
             List<string> nsList = namespaceList.Keys.ToList();
             nsList.Sort();
 
@@ -189,7 +189,7 @@ namespace HtmlDocGenerator
                         html += $"<th class=\"col-type-name\"></th>{_nl}";
                         html += $"</tr></thead><tbody>{_nl}";
                         html += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
-                        string htmlIcon = GetIconHtml(obj);
+                        string htmlIcon = _context.GetIcon(obj);
                         html += $"       <td>{htmlIcon}</td>{_nl}";
                         html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{obj.HtmlName}</span></td>{_nl}";
                         html += $"    </tr>{_nl}";
@@ -203,7 +203,7 @@ namespace HtmlDocGenerator
                             string innerHtml = "";
                             foreach (ObjectSectionGenerator secGen in _objSectionGens)
                             {
-                                string secHtml = secGen.GenerateIndexTreeItems(nsObj, obj);
+                                string secHtml = secGen.GenerateIndexTreeItems(_context, nsObj, obj);
 
                                 if (secHtml.Length > 0)
                                 {
@@ -240,33 +240,17 @@ namespace HtmlDocGenerator
             return docHtml;
         }
 
-        private string GetIconHtml(DocObject obj, string pathPrefix = "")
-        {
-            string iconName = obj.SubType.ToString().ToLower();
-            string html = "&nbsp;";
-
-            if (!string.IsNullOrWhiteSpace(iconName))
-            {
-                if(_config.Icons.TryGetValue(iconName.ToLower(), out string iconPath))
-                    html = $"<img src=\"{pathPrefix}{iconPath}\"/>";
-            }
-
-            return html;
-        }
-
         private void GenerateObjectPage(string destPath, string ns, DocObject obj)
         {
             string docHtml = "";
 
             foreach (ObjectSectionGenerator sGen in _objSectionGens)
-            {
-                docHtml += sGen.Generate(obj);
-            }
+                docHtml += sGen.Generate(_context, ns, obj);
 
             string html = _templateObjHtml
                 .Replace("[NAMESPACE]", ns)
                 .Replace("[TITLE]", obj.HtmlName)
-                .Replace("[ICON]", GetIconHtml(obj, "../"))
+                .Replace("[ICON]", _context.GetIcon(obj, "../"))
                 .Replace("[SUMMARY]", obj.Summary)
                 .Replace("[BUILD-CONTENT]", docHtml);
 

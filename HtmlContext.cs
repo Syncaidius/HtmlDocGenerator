@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -8,7 +9,7 @@ using System.Xml.XPath;
 
 namespace HtmlDocGenerator
 {
-    public class GeneratorConfig
+    public class HtmlContext
     {
         public class IndexConfig
         {
@@ -47,9 +48,9 @@ namespace HtmlDocGenerator
 
         public SummaryConfig Summary { get; } = new SummaryConfig();
 
-        public static GeneratorConfig Load(string path)
+        public static HtmlContext Load(string path)
         {
-            GeneratorConfig config = new GeneratorConfig();
+            HtmlContext config = new HtmlContext();
             XmlDocument doc = new XmlDocument();
 
             if (File.Exists(path))
@@ -140,6 +141,30 @@ namespace HtmlDocGenerator
             }
 
             return true;
+        }
+
+        public string GetIcon(MemberInfo info, string pathPrefix = "")
+        {
+            return GetIcon(info.Name, pathPrefix);
+        }
+
+        public string GetIcon(DocObject obj, string pathPrefix = "")
+        {
+            string iconName = obj.SubType.ToString().ToLower();
+            return GetIcon(iconName, pathPrefix);
+        }
+
+        public string GetIcon(string iconName, string pathPrefix = "")
+        {
+            string html = "&nbsp;";
+
+            if (!string.IsNullOrWhiteSpace(iconName))
+            {
+                if (Icons.TryGetValue(iconName.ToLower(), out string iconPath))
+                    html = $"<img src=\"{pathPrefix}{iconPath}\"/>";
+            }
+
+            return html;
         }
     }
 }
