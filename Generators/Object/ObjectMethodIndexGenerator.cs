@@ -42,9 +42,17 @@ namespace HtmlDocGenerator
             return html;
         }
 
-        protected override string GetTitle()
+        public override string GetTitle()
         {
             return "Methods";
+        }
+
+        protected override string GetMemberHtml(string ns, DocObject obj, string memberHtmlName, MethodInfo member)
+        {
+            if (member.IsSpecialName)
+                return "";
+            else 
+                return $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{memberHtmlName}</span></td>{Environment.NewLine}";
         }
     }
 }

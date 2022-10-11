@@ -29,7 +29,7 @@ namespace HtmlDocGenerator
             return html;
         }
 
-        protected override string GetTitle()
+        public override string GetTitle()
         {
             return "Events";
         }

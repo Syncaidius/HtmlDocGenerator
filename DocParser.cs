@@ -65,7 +65,10 @@ namespace HtmlDocGenerator
             }
             catch (Exception ex)
             {
+                ConsoleColor pCol = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Failed to retrieve public types from '{doc.AssemblyName}': {ex.Message}");
+                Console.ForegroundColor = pCol;
             }
         }
 

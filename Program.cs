@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net.Mail;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace MyApp // Note: actual namespace depends on the project name.
 {
@@ -94,11 +95,17 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 return null;
 
             path = Path.GetFullPath(path);
-            Assembly assembly = Assembly.LoadFile(path);
-            string[] aParts = assembly.FullName.Split(',');
-            string aName = aParts[0];
+            FileInfo assemblyInfo = new FileInfo(path);
+            string aFileName = assemblyInfo.Name.Replace(assemblyInfo.Extension, "");
 
-            _loadedAssemblies.Add(aName, assembly);
+            if (!_loadedAssemblies.TryGetValue(aFileName, out Assembly assembly))
+            {
+                assembly = Assembly.LoadFile(path);
+                string[] aParts = assembly.FullName.Split(',');
+                string aName = aParts[0];
+
+                _loadedAssemblies.Add(aName, assembly);
+            }
 
             return assembly;
         }
@@ -116,9 +123,8 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
                 if (assemblyInfo.Exists)
                 {
-                    AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                     assembly = Assembly.LoadFile(assemblyInfo.FullName);
-                    _loadedAssemblies.Add(assembly.FullName, assembly);
+                    _loadedAssemblies.Add(aName, assembly);
                     return assembly;
                 }
                 else

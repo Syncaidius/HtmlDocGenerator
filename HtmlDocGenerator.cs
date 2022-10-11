@@ -157,14 +157,14 @@ namespace HtmlDocGenerator
                 string nsEscaped = ns.Replace('.', '_');
                 List<DocObject> objList = namespaceList[ns].Where(o => o.UnderlyingType != null).ToList();
 
-                html += $"<div id=\"{nsEscaped}\" class=\"sec-namespace\">{_nl}";
-                html += $"<span class=\"namespace-toggle\">{ns}</span><br/>{_nl}";
-                html += $"    <div class=\"sec-namespace-inner\">{_nl}";
-                html += GenerateObjectIndex(nsEscaped, "Classes", objList, DocObjectSubType.Class);
-                html += GenerateObjectIndex(nsEscaped, "Structs", objList, DocObjectSubType.Struct);
-                html += GenerateObjectIndex(nsEscaped, "Interfaces", objList, DocObjectSubType.Interface);
-                html += GenerateObjectIndex(nsEscaped, "Enums", objList, DocObjectSubType.Enum);
-                html += $"</div></div>{_nl}";
+                html += GenerateTreeBranch(nsEscaped, ns, () =>
+                {
+                    string innerHtml = GenerateObjectIndex(nsEscaped, "Classes", objList, DocObjectSubType.Class);
+                    innerHtml += GenerateObjectIndex(nsEscaped, "Structs", objList, DocObjectSubType.Struct);
+                    innerHtml += GenerateObjectIndex(nsEscaped, "Interfaces", objList, DocObjectSubType.Interface);
+                    innerHtml += GenerateObjectIndex(nsEscaped, "Enums", objList, DocObjectSubType.Enum);
+                    return innerHtml;
+                });
             }
 
             return html;
@@ -177,31 +177,65 @@ namespace HtmlDocGenerator
             if (filteredList.Count == 0)
                 return "";
 
-            string docHtml = $"<div id=\"{ns}{title}\" class=\"sec-namespace sec-namespace-noleft\">{_nl}";
-            docHtml += $"<span class=\"namespace-toggle\">{title}</span><br/>{_nl}";
-            docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
-
-            docHtml += $"<table class=\"sec-obj-index\"><thead><tr>{_nl}";
-            docHtml += $"<th class=\"col-type-icon\"></th>{_nl}";
-            docHtml += $"<th class=\"col-type-name\"></th>{_nl}";
-            docHtml += $"</tr></thead><tbody>{_nl}";
-            foreach (DocObject obj in filteredList)
+            return GenerateTreeBranch(ns, title, () =>
             {
-                string summary = string.IsNullOrWhiteSpace(obj.Summary) ? "" : obj.Summary;
-                if (_config.Summary.MaxLength > 0 && summary.Length > _config.Summary.MaxLength)
+                string html = "";
+                foreach (DocObject obj in filteredList)
                 {
-                    summary = summary.Substring(0, _config.Summary.MaxLength);
-                    summary += $"...<a href=\"#\">{_config.Summary.ReadMore}</a>{_nl}";
+                    if (obj.TypeMembers.Length == 0 || obj.UnderlyingType.IsEnum)
+                    {
+                        html += $"<table class=\"sec-obj-index\"><thead><tr>{_nl}";
+                        html += $"<th class=\"col-type-icon\"></th>{_nl}";
+                        html += $"<th class=\"col-type-name\"></th>{_nl}";
+                        html += $"</tr></thead><tbody>{_nl}";
+                        html += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
+                        string htmlIcon = GetIconHtml(obj);
+                        html += $"       <td>{htmlIcon}</td>{_nl}";
+                        html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{obj.HtmlName}</span></td>{_nl}";
+                        html += $"    </tr>{_nl}";
+                        html += $"</tbody></table>{_nl}";
+                    }
+                    else
+                    {
+                        string nsObj = $"{ns}{title}";
+                        html += GenerateTreeBranch(nsObj, obj.HtmlName, () =>
+                        {
+                            string innerHtml = "";
+                            foreach (ObjectSectionGenerator secGen in _objSectionGens)
+                            {
+                                string secHtml = secGen.GenerateIndexTreeItems(nsObj, obj);
+
+                                if (secHtml.Length > 0)
+                                {
+                                    string secTitle = secGen.GetTitle();
+                                    string nsSec = $"{nsObj}{secTitle}";
+
+                                    innerHtml += GenerateTreeBranch(nsSec, secTitle, secHtml, 3);
+                                }
+                            }
+
+                            return innerHtml;
+                        }, 2);
+                        
+                    }
                 }
 
-                string htmlIcon = GetIconHtml(obj);
-                docHtml += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
-                docHtml += $"       <td>{htmlIcon}</td>{_nl}";
-                docHtml += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{obj.HtmlName}</span></td>{_nl}";
-                docHtml += $"    </tr>{_nl}";
-            }
+                return html;
+            }, 1);
+        }
 
-            docHtml += $"</tbody></table>{_nl}";
+        private string GenerateTreeBranch(string ns, string title, Func<string> contentCallback, int depth = 0)
+        {
+            string contentHtml = contentCallback?.Invoke() ?? "";
+            return GenerateTreeBranch(ns, title, contentHtml, depth);
+        }
+
+        private string GenerateTreeBranch(string ns, string title, string contentHtml, int depth = 0)
+        {
+            string docHtml = $"<div id=\"{ns}{title}\" class=\"sec-namespace sec-namespace{(depth > 0 ? "-noleft" : "")}\">{_nl}";
+            docHtml += $"<span class=\"namespace-toggle\">{title}</span><br/>{_nl}";
+            docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
+            docHtml += contentHtml;
             docHtml += $"</div></div>{_nl}";
             return docHtml;
         }

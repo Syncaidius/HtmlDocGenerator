@@ -21,6 +21,10 @@ namespace HtmlDocGenerator
             return html;
         }
 
+        public abstract string GetTitle();
+
         protected abstract string OnGenerate(DocObject obj);
+
+        public abstract string GenerateIndexTreeItems(string ns, DocObject obj);
     }
 }
