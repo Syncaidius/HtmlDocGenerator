@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
+	<destination>docs\</destination>
 	<template>
 		<index>docs\template.html</index>
 		<object>docs\template_obj.html</object>
@@ -15,6 +16,10 @@
 		<field></field>
 		<event>img/event.png</event>
 	</icons>
+
+	<scripts>
+		<script>docs/js/index.js</script>
+	</scripts>
 
 	<index>
 		<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>

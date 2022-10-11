@@ -114,25 +114,20 @@ namespace HtmlDocGenerator
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
 
-            string scriptHtml = $@"<script>
-                                    let toggler = document.getElementsByClassName(""namespace-toggle"");
-                                    let i;
+            string scriptHtml = "";
+            foreach (string scriptPath in _context.Scripts)
+            {
+                string fullScriptPath = Path.GetFullPath(scriptPath);
+                string scriptText = "";
 
-                                    for (i = 0; i < toggler.length; i++) {{
-                                      toggler[i].addEventListener(""click"", function() {{
-                                            this.parentElement.querySelector("".sec-namespace-inner"").classList.toggle(""sec-active"");
-                                            this.classList.toggle(""namespace-toggle-down"");
-                                          }});
-                                    }}
-                                    
-                                    let pageTargets = document.getElementsByClassName(""doc-page-target"");
-                                    for (i = 0; i < pageTargets.length; i++) {{
-                                            pageTargets[i].addEventListener(""click"", function(e) {{
-                                                document.getElementById('content-target').src = e.target.dataset.url
-                                            }});
-                                    }}
+                using (FileStream stream = new FileStream(fullScriptPath, FileMode.Open, FileAccess.Read))
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                        scriptText = reader.ReadToEnd();
+                }
+                scriptHtml += $"<script>{scriptText}</script>";
+            }
 
-                                </script>";
             html = html.Replace("[SCRIPTS]", scriptHtml);
 
             // Output final html to destPath

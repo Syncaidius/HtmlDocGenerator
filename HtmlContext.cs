@@ -33,9 +33,12 @@ namespace HtmlDocGenerator
             public string ReadMore { get; set; } = "Read More";
         }
 
+        public string DestinationPath { get; set; } = "docs\\";
         public TemplateConfig Template { get; } = new TemplateConfig();
 
         public List<string> Definitions { get; } = new List<string>();
+
+        public List<string> Scripts { get; } = new List<string>();
 
         public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
 
@@ -58,10 +61,19 @@ namespace HtmlDocGenerator
                 using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                     doc.Load(stream);
 
+                XmlNode dest = doc["config"]["destination"];
                 XmlNode defs = doc["config"]["definitions"];
                 XmlNode nugets = doc["config"]["nuget"];
                 XmlNode template = doc["config"]["template"];
-                if(template != null)
+                XmlNode scripts = doc["config"]["scripts"];
+                XmlNode index = doc["config"]["index"];
+                XmlNode summary = doc["config"]["summary"];
+                XmlNode icons = doc["config"]["icons"];
+
+                if (dest != null)
+                    config.DestinationPath = dest.InnerText;
+
+                if (template != null)
                 {
                     XmlNode xIndex = template["index"];
                     if (xIndex != null)
@@ -90,7 +102,7 @@ namespace HtmlDocGenerator
                 }
 
                 // Index config
-                XmlNode index = doc["config"]["index"];
+                
                 if(index != null)
                 {
                     XmlNode intro = index["intro"];
@@ -99,7 +111,7 @@ namespace HtmlDocGenerator
                 }
 
                 // Summary config
-                XmlNode summary = doc["config"]["summary"];
+                
                 if(summary != null)
                 {
                     XmlNode sumMaxLength = summary["maxlength"];
@@ -115,11 +127,16 @@ namespace HtmlDocGenerator
                 }
 
                 // Icon config
-                XmlNode icons = doc["config"]["icons"];
                 if(icons != null)
                 {
                     foreach (XmlNode iNode in icons.ChildNodes)
                         config.Icons.Add(iNode.Name.ToLower(), iNode.InnerText);
+                }
+
+                if(scripts != null)
+                {
+                    foreach (XmlNode iNode in scripts.ChildNodes)
+                        config.Scripts.Add(iNode.InnerText);
                 }
             }
 
@@ -145,7 +162,7 @@ namespace HtmlDocGenerator
 
         public string GetIcon(MemberInfo info, string pathPrefix = "")
         {
-            return GetIcon(info.Name, pathPrefix);
+            return GetIcon(info.MemberType.ToString(), pathPrefix);
         }
 
         public string GetIcon(DocObject obj, string pathPrefix = "")

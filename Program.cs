@@ -62,7 +62,11 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 docs.Add(doc);
             }
 
-            generator.Generate(docs, $"{exeInfo.DirectoryName}\\docs\\", $"{exeInfo.DirectoryName}\\docs\\index.html");
+            string destPath = config.DestinationPath;
+            if(!Path.IsPathFullyQualified(destPath))
+                destPath = Path.GetFullPath(destPath);
+
+            generator.Generate(docs, $"{destPath}\\", $"{destPath}\\index.html");
         }
 
         private static void LoadNugetPackage(NugetDefinition nd)
