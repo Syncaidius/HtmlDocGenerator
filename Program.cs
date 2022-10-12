@@ -5,7 +5,7 @@ using System.Net.Mail;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace MyApp // Note: actual namespace depends on the project name.
+namespace HtmlDocGenerator // Note: actual namespace depends on the project name.
 {
     internal class Program
     {
@@ -26,23 +26,22 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
         private static void Run(string[] args)
         {
-            HtmlContext config = HtmlContext.Load("config.xml");
-            if (!config.Validate())
+            HtmlContext context = HtmlContext.Load("config.xml");
+            if (context == null)
                 return;
 
-            HtmlDocGenerator.HtmlDocGenerator generator = new HtmlDocGenerator.HtmlDocGenerator(config);
+            DocGenerator generator = new DocGenerator();
             DocParser parser = new DocParser();
             _nuget = new NugetDownloader(PACKAGE_STORE_PATH);
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            foreach (NugetDefinition nd in config.Packages)
+            foreach (NugetDefinition nd in context.Packages)
                 LoadNugetPackage(nd);
 
-            FileInfo exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
             List<DocData> docs = new List<DocData>();
 
-            foreach (string def in config.Definitions)
+            foreach (string def in context.Definitions)
             {
                 FileInfo info = new FileInfo(def);
                 if (!info.Exists)
@@ -57,16 +56,16 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
                 doc.Assembly = LoadAssembly($"{info.Directory}\\{doc.AssemblyName}.dll");
                 if (doc.Assembly != null)
-                    parser.ScanAssembly(doc, doc.Assembly);
+                    parser.ScanAssembly(context, doc, doc.Assembly);
 
                 docs.Add(doc);
             }
 
-            string destPath = config.DestinationPath;
+            string destPath = context.DestinationPath;
             if(!Path.IsPathFullyQualified(destPath))
                 destPath = Path.GetFullPath(destPath);
 
-            generator.Generate(docs, $"{destPath}\\", $"{destPath}\\index.html");
+            generator.Generate(context, docs, $"{destPath}\\", $"{destPath}\\index.html");
         }
 
         private static void LoadNugetPackage(NugetDefinition nd)
@@ -104,11 +103,18 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
             if (!_loadedAssemblies.TryGetValue(aFileName, out Assembly assembly))
             {
-                assembly = Assembly.LoadFile(path);
-                string[] aParts = assembly.FullName.Split(',');
-                string aName = aParts[0];
+                if (assemblyInfo.Exists)
+                {
+                    assembly = Assembly.LoadFile(path);
+                    string[] aParts = assembly.FullName.Split(',');
+                    string aName = aParts[0];
 
-                _loadedAssemblies.Add(aName, assembly);
+                    _loadedAssemblies.Add(aName, assembly);
+                }
+                else
+                {
+
+                }
             }
 
             return assembly;

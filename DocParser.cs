@@ -45,13 +45,13 @@ namespace HtmlDocGenerator
             return doc;
         }
 
-        public void ScanAssembly(DocData doc, Assembly assembly)
+        public void ScanAssembly(HtmlContext context, DocData doc, Assembly assembly)
         {
             try
             {
-                Console.WriteLine($"Retrieving type list from '{doc.AssemblyName}'");
+                context.Log($"Retrieving type list from '{doc.AssemblyName}'");
                 Type[] aTypes = assembly.GetExportedTypes();
-                Console.WriteLine($"Retrieved {aTypes.Length} public types from '{doc.AssemblyName}'");
+                context.Log($"Retrieved {aTypes.Length} public types from '{doc.AssemblyName}'");
 
                 foreach (Type t in aTypes)
                 {
@@ -65,10 +65,7 @@ namespace HtmlDocGenerator
             }
             catch (Exception ex)
             {
-                ConsoleColor pCol = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Failed to retrieve public types from '{doc.AssemblyName}': {ex.Message}");
-                Console.ForegroundColor = pCol;
+                context.Error($"Failed to retrieve public types from '{doc.AssemblyName}': {ex.Message}");
             }
         }
 

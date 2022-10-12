@@ -9,12 +9,8 @@ using System.Xml.Serialization;
 
 namespace HtmlDocGenerator
 {
-    public class HtmlDocGenerator
+    public class DocGenerator
     {
-        string _templateIndexHtml;
-        string _templateObjHtml;
-        HtmlContext _context;
-
         List<ObjectSectionGenerator> _objSectionGens;
 
         /// <summary>
@@ -22,7 +18,7 @@ namespace HtmlDocGenerator
         /// </summary>
         string _nl;
 
-        public HtmlDocGenerator(HtmlContext config)
+        public DocGenerator()
         {
             // Instantiate object section generators
             _objSectionGens = new List<ObjectSectionGenerator>();
@@ -34,24 +30,6 @@ namespace HtmlDocGenerator
             }
 
             _nl = Environment.NewLine;
-            _context = config;
-
-            // Read template html file.
-            using (FileStream stream = new FileStream(_context.Template.Index, FileMode.Open, FileAccess.Read))
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    _templateIndexHtml = reader.ReadToEnd();
-                }
-            }
-
-            using (FileStream stream = new FileStream(_context.Template.Object, FileMode.Open, FileAccess.Read))
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    _templateObjHtml = reader.ReadToEnd();
-                }
-            }
         }
 
         /// <summary>
@@ -59,7 +37,7 @@ namespace HtmlDocGenerator
         /// </summary>
         /// <param name="docs"></param>
         /// <param name="indexPath"></param>
-        public void Generate(List<DocData> docs, string destPath, string indexPath)
+        public void Generate(HtmlContext context, List<DocData> docs, string destPath, string indexPath)
         {
             Dictionary<string, List<DocObject>> namespaceList = new Dictionary<string, List<DocObject>>();
             foreach (DocData doc in docs)
@@ -105,17 +83,17 @@ namespace HtmlDocGenerator
                             obj.SubType = DocObjectSubType.Struct;
                     }
 
-                    GenerateObjectPage($"{nsDestPath}\\{objEscaped}.html", ns, obj);
+                    GenerateObjectPage(context, $"{nsDestPath}\\{objEscaped}.html", ns, obj);
                 }
             }
 
-            string indexHtml = BuildIndexTree(docs, namespaceList);
-            string html = _templateIndexHtml.Replace("[BUILD-INDEX]", indexHtml);
+            string indexHtml = BuildIndexTree(context, docs, namespaceList);
+            string html = context.Template.IndexHtml.Replace("[BUILD-INDEX]", indexHtml);
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
 
             string scriptHtml = "";
-            foreach (string scriptPath in _context.Scripts)
+            foreach (string scriptPath in context.Scripts)
             {
                 string fullScriptPath = Path.GetFullPath(scriptPath);
                 string scriptText = "";
@@ -140,10 +118,10 @@ namespace HtmlDocGenerator
             }
         }
 
-        private string BuildIndexTree(List<DocData> docs, Dictionary<string, List<DocObject>> namespaceList)
+        private string BuildIndexTree(HtmlContext context, List<DocData> docs, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Output namespaces
-            string html = $"<p>{_context.Index.Intro}</p>";
+            string html = $"<p>{context.Index.Intro}</p>";
             List<string> nsList = namespaceList.Keys.ToList();
             nsList.Sort();
 
@@ -154,10 +132,10 @@ namespace HtmlDocGenerator
 
                 html += GenerateTreeBranch(nsEscaped, ns, () =>
                 {
-                    string innerHtml = GenerateObjectIndex(nsEscaped, "Classes", objList, DocObjectSubType.Class);
-                    innerHtml += GenerateObjectIndex(nsEscaped, "Structs", objList, DocObjectSubType.Struct);
-                    innerHtml += GenerateObjectIndex(nsEscaped, "Interfaces", objList, DocObjectSubType.Interface);
-                    innerHtml += GenerateObjectIndex(nsEscaped, "Enums", objList, DocObjectSubType.Enum);
+                    string innerHtml = GenerateObjectIndex(context, nsEscaped, "Classes", objList, DocObjectSubType.Class);
+                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Structs", objList, DocObjectSubType.Struct);
+                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Interfaces", objList, DocObjectSubType.Interface);
+                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Enums", objList, DocObjectSubType.Enum);
                     return innerHtml;
                 });
             }
@@ -165,7 +143,7 @@ namespace HtmlDocGenerator
             return html;
         }
 
-        private string GenerateObjectIndex(string ns, string title, List<DocObject> objList, DocObjectSubType subType)
+        private string GenerateObjectIndex(HtmlContext context, string ns, string title, List<DocObject> objList, DocObjectSubType subType)
         {
             List<DocObject> filteredList = objList.Where(o => o.SubType == subType).ToList();
 
@@ -184,7 +162,7 @@ namespace HtmlDocGenerator
                         html += $"<th class=\"col-type-name\"></th>{_nl}";
                         html += $"</tr></thead><tbody>{_nl}";
                         html += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
-                        string htmlIcon = _context.GetIcon(obj);
+                        string htmlIcon = context.GetIcon(obj);
                         html += $"       <td>{htmlIcon}</td>{_nl}";
                         html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{obj.HtmlName}</span></td>{_nl}";
                         html += $"    </tr>{_nl}";
@@ -198,7 +176,7 @@ namespace HtmlDocGenerator
                             string innerHtml = "";
                             foreach (ObjectSectionGenerator secGen in _objSectionGens)
                             {
-                                string secHtml = secGen.GenerateIndexTreeItems(_context, nsObj, obj);
+                                string secHtml = secGen.GenerateIndexTreeItems(context, nsObj, obj);
 
                                 if (secHtml.Length > 0)
                                 {
@@ -235,17 +213,17 @@ namespace HtmlDocGenerator
             return docHtml;
         }
 
-        private void GenerateObjectPage(string destPath, string ns, DocObject obj)
+        private void GenerateObjectPage(HtmlContext context, string destPath, string ns, DocObject obj)
         {
             string docHtml = "";
 
             foreach (ObjectSectionGenerator sGen in _objSectionGens)
-                docHtml += sGen.Generate(_context, ns, obj);
+                docHtml += sGen.Generate(context, ns, obj);
 
-            string html = _templateObjHtml
+            string html = context.Template.ObjectHtml
                 .Replace("[NAMESPACE]", ns)
                 .Replace("[TITLE]", obj.HtmlName)
-                .Replace("[ICON]", _context.GetIcon(obj, "../"))
+                .Replace("[ICON]", context.GetIcon(obj, "../"))
                 .Replace("[SUMMARY]", obj.Summary)
                 .Replace("[BUILD-CONTENT]", docHtml);
 
@@ -258,7 +236,7 @@ namespace HtmlDocGenerator
                 }
             }
 
-            Console.WriteLine($"Created page for {ns}.{obj.Name}: {destPath}");
+            context.Log($"Created page for {ns}.{obj.Name}: {destPath}");
         }
 
         private void CollateNamespaceTypes(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)

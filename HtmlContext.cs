@@ -18,9 +18,9 @@ namespace HtmlDocGenerator
 
         public class TemplateConfig
         {
-            public string Index { get; set; }
+            public string IndexHtml { get; set; }
 
-            public string Object { get; set; }
+            public string ObjectHtml { get; set; }
         }
 
         public class SummaryConfig
@@ -77,11 +77,45 @@ namespace HtmlDocGenerator
                 {
                     XmlNode xIndex = template["index"];
                     if (xIndex != null)
-                        config.Template.Index = xIndex.InnerText;
+                    {
+                        string indexPath = $"{config.DestinationPath}{xIndex.InnerText}";
+                        if (File.Exists(indexPath))
+                        {
+                            using (FileStream stream = new FileStream(indexPath, FileMode.Open, FileAccess.Read))
+                            {
+                                using (StreamReader reader = new StreamReader(stream))
+                                {
+                                    config.Template.IndexHtml = reader.ReadToEnd();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            config.Log($"Index page template not found: {indexPath}");
+                            return null;
+                        }
+                    }
 
                     XmlNode xObject = template["object"];
                     if (xObject != null)
-                        config.Template.Object = xObject.InnerText;
+                    {
+                        string objPath = $"{config.DestinationPath}{xObject.InnerText}";
+                        if (File.Exists(objPath))
+                        {
+                            using (FileStream stream = new FileStream(objPath, FileMode.Open, FileAccess.Read))
+                            {
+                                using (StreamReader reader = new StreamReader(stream))
+                                {
+                                    config.Template.ObjectHtml = reader.ReadToEnd();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            config.Log($"Object page template not found: {objPath}");
+                            return null;
+                        }
+                    }
                 }
 
                 foreach (XmlNode child in defs.ChildNodes)
@@ -143,21 +177,17 @@ namespace HtmlDocGenerator
             return config;
         }
 
-        public bool Validate()
+        public void Log(string message)
         {
-            if (!File.Exists(Template.Index))
-            {
-                Console.WriteLine($"Index page template not found: {Template.Index}");
-                return false;
-            }
+            Console.WriteLine(message);
+        }
 
-            if (!File.Exists(Template.Object))
-            {
-                Console.WriteLine($"Object page template not found: {Template.Object}");
-                return false;
-            }
-
-            return true;
+        public void Error(string message)
+        {
+            ConsoleColor pCol = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {message}");
+            Console.ForegroundColor = pCol;
         }
 
         public string GetIcon(MemberInfo info, string pathPrefix = "")

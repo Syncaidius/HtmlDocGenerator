@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
 	<destination>docs\</destination>
+	
 	<template>
-		<index>docs\template.html</index>
-		<object>docs\template_obj.html</object>
+		<index>template.html</index>
+		<object>template_obj.html</object>
 	</template>
 
 	<icons>
