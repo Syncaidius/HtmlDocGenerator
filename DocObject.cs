@@ -28,6 +28,35 @@ namespace HtmlDocGenerator
             return member;
         }
 
+        private void BuildTypeInfo()
+        {
+            if (_type == null)
+            {
+                SubType = DocObjectSubType.Unknown;
+                TypeMembers = null;
+            }
+            else
+            {
+                TypeMembers = _type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+                if (_type.IsClass)
+                {
+                    SubType = DocObjectSubType.Class;
+                }
+                else if (_type.IsInterface)
+                {
+                    SubType = DocObjectSubType.Interface;
+                }
+                else if (_type.IsValueType)
+                {
+                    if (_type.IsEnum)
+                        SubType = DocObjectSubType.Enum;
+                    else
+                        SubType = DocObjectSubType.Struct;
+                }
+            }
+        }
+
         public override string ToString()
         {
             return $"{Name} - {Type} - Members: {Members.Count}";
@@ -59,11 +88,7 @@ namespace HtmlDocGenerator
                 if(_type != value)
                 {
                     _type = value;
-
-                    if (_type == null)
-                        TypeMembers = null;
-                    else
-                        TypeMembers = _type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                    BuildTypeInfo();
                 }
             }
         }
@@ -102,12 +127,14 @@ namespace HtmlDocGenerator
 
     public enum DocObjectSubType
     {
-        Class = 0,
+        Unknown = 0,
+         
+        Class = 1,
 
-        Struct = 1,
+        Struct = 2,
 
-        Enum = 2,
+        Enum = 3,
 
-        Interface = 3,
+        Interface = 4,
     }
 }

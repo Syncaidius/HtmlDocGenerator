@@ -67,22 +67,6 @@ namespace HtmlDocGenerator
                     string objEscaped = obj.Name.Replace('<', '_').Replace('>', '_');
                     obj.PageUrl = $"{nsEscaped}/{objEscaped}.html";
 
-                    if (obj.UnderlyingType.IsClass)
-                    {
-                        obj.SubType = DocObjectSubType.Class;
-                    }
-                    else if (obj.UnderlyingType.IsInterface)
-                    {
-                        obj.SubType = DocObjectSubType.Interface;
-                    }
-                    else if (obj.UnderlyingType.IsValueType)
-                    {
-                        if (obj.UnderlyingType.IsEnum)
-                            obj.SubType = DocObjectSubType.Enum;
-                        else
-                            obj.SubType = DocObjectSubType.Struct;
-                    }
-
                     GenerateObjectPage(context, $"{nsDestPath}\\{objEscaped}.html", ns, obj);
                 }
             }
