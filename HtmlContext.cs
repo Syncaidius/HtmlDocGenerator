@@ -208,10 +208,20 @@ namespace HtmlDocGenerator
             if (!string.IsNullOrWhiteSpace(iconName))
             {
                 if (Icons.TryGetValue(iconName.ToLower(), out string iconPath))
-                    html = $"<img src=\"{pathPrefix}{iconPath}\"/>";
+                    html = $"<img src=\"{pathPrefix}{iconPath}\" title=\"{iconName}\" alt\"{iconName} icon\"/>";
             }
 
             return html;
+        }
+
+        /// <summary>
+        /// Converts a string into a safe file name.
+        /// </summary>
+        /// <param name="text">The text to be converted into a file-name.</param>
+        /// <returns></returns>
+        public string GetFileName(string text)
+        {
+            return text.Replace('<', '_').Replace('>', '_').Replace('.', '_'); 
         }
     }
 }

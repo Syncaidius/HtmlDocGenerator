@@ -7,16 +7,26 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
-    public class ObjectMethodIndexGenerator : ObjectMemberSectionGenerator<MethodInfo>
+    public class ObjectMethodIndexGenerator : ObjectMemberSectionGenerator<MethodBase>
     {
         public override string GetTitle()
         {
             return "Methods";
         }
 
-        protected override string GetMemberHtml(string ns, DocObject obj, MethodInfo member, bool isIndex)
+        protected virtual bool IsValidMethod(MethodBase member)
         {
-            if (member.IsSpecialName)
+            return !member.IsSpecialName;
+        }
+
+        protected virtual string GetMethodName(DocObject obj, MethodBase member)
+        {
+            return HtmlHelper.GetHtmlName(member.Name);
+        }
+
+        protected override sealed string GetMemberHtml(string ns, DocObject obj, MethodBase member, bool isIndex)
+        {
+            if (!IsValidMethod(member))
             {
                 return "";
             }
@@ -35,10 +45,12 @@ namespace HtmlDocGenerator
 
                         paramHtml += HtmlHelper.GetHtmlName(pi.ParameterType);
                     }
+
+                    paramHtml = $"({paramHtml})";
                 }
 
-                string memberHtml = base.GetMemberHtml(ns, obj, member, isIndex);
-                return $"{memberHtml}({paramHtml})";
+                string memberHtml = GetMethodName(obj, member);
+                return $"{memberHtml}{paramHtml}";
             }
         }
     }

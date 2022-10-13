@@ -17,37 +17,43 @@ namespace HtmlDocGenerator
         protected override string OnGenerate(HtmlContext config, string ns, DocObject obj)
         {
             IEnumerable<T> members = obj.TypeMembers.Where(x => (x as T) != null).Cast<T>();
-           
             string html = "";
 
             if (members.Count() > 0)
             {
                 members = members.OrderBy(x => x.Name);
-
-                Html(ref html, "<table><thead><tr>");
-                Html(ref html, $"   <th class=\"obj-section-icon\">&nbsp;</th>");
-                Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
-                Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
-                Html(ref html, "</tr></thead><tbody>");
+                string contentHtml = "";
 
                 foreach (T member in members)
                 {
-                    string iconHtml = config.GetIcon(member);
-                    string memHeml = GetMemberHtml(ns, obj, member, false);
+                    string memHtml = GetMemberHtml(ns, obj, member, false);
+                    if (memHtml.Length == 0)
+                        continue;
 
-                    Html(ref html, "<tr>");
-                    Html(ref html, $"   <td>{iconHtml}</td>");
-                    Html(ref html, $"   <td>{memHeml}</td>");
+                    string iconHtml = config.GetIcon(member, "../");
+
+                    Html(ref contentHtml, "<tr>");
+                    Html(ref contentHtml, $"   <td>{iconHtml}</td>");
+                    Html(ref contentHtml, $"   <td>{memHtml}</td>");
 
                     string mSummary = "&nbsp;";
                     if (obj.Members.TryGetValue(member.Name, out DocObject memObj))
                         mSummary = memObj.Summary;
 
-                    Html(ref html, $"<td>{mSummary}</td>");
-                    Html(ref html, $"</tr>");
+                    Html(ref contentHtml, $"<td>{mSummary}</td>");
+                    Html(ref contentHtml, $"</tr>");
                 }
 
-                html += "</tbody></table><br/>";
+                if (contentHtml.Length > 0)
+                {
+                    Html(ref html, "<table><thead><tr>");
+                    Html(ref html, $"   <th class=\"obj-section-icon\">&nbsp;</th>");
+                    Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
+                    Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
+                    Html(ref html, "</tr></thead><tbody>");
+                    Html(ref html, contentHtml);
+                    Html(ref html, "</tbody></table><br/>");
+                }
             }
 
             return html;
@@ -59,13 +65,10 @@ namespace HtmlDocGenerator
             if (members.Count() == 0)
                 return "";
 
-            string nl = Environment.NewLine;
-            string html = $"<table class=\"sec-obj-index\"><thead><tr>{nl}";
+            string html = "";
+            string contentHtml = "";
 
-            html += $"<th class=\"col-type-icon\"></th>{nl}";
-            html += $"<th class=\"col-type-name\"></th>{nl}";
-            html += $"</tr></thead><tbody>{nl}";
-            foreach(T member in members)
+            foreach (T member in members)
             {
                 string memHtmlName = HtmlHelper.GetHtmlName(member.Name);
                 if (memHtmlName.Length == 0)
@@ -79,12 +82,21 @@ namespace HtmlDocGenerator
 
                 string htmlIcon = config.GetIcon(member);
 
-                html += $"   <tr id=\"{nsMember}\" class=\"sec-namespace-obj\">{Environment.NewLine}";
-                html += $"       <td>{htmlIcon}</td>{Environment.NewLine}";
-                html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{memberHtml}</span></td>{Environment.NewLine}";
-                html += $"    </tr>{Environment.NewLine}";
+                contentHtml += $"   <tr id=\"{nsMember}\" class=\"sec-namespace-obj\">{Environment.NewLine}";
+                contentHtml += $"       <td>{htmlIcon}</td>{Environment.NewLine}";
+                contentHtml += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{memberHtml}</span></td>{Environment.NewLine}";
+                contentHtml += $"    </tr>{Environment.NewLine}";
             }
-            html += $"</tbody></table>{nl}";
+
+            if (contentHtml.Length > 0)
+            {
+                Html(ref html, $"<table class=\"sec-obj-index\"><thead><tr>");
+                Html(ref html, $"<th class=\"col-type-icon\"></th>");
+                Html(ref html, $"<th class=\"col-type-name\"></th>");
+                Html(ref html, $"</tr></thead><tbody>");
+                Html(ref html, contentHtml);
+                Html(ref html, $"</tbody></table>");
+            }
 
             return html;
         }        

@@ -9,8 +9,6 @@ namespace HtmlDocGenerator
 {
     public class ObjectPropertyIndexGenerator : ObjectMemberSectionGenerator<PropertyInfo>
     {
-        
-
         public override string GetTitle()
         {
             return "Properties";

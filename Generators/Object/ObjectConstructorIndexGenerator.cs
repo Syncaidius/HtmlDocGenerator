@@ -7,34 +7,21 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
-    public class ObjectConstructorIndexGenerator : ObjectMemberSectionGenerator<ConstructorInfo>
+    public class ObjectConstructorIndexGenerator : ObjectMethodIndexGenerator
     {
         public override string GetTitle()
         {
             return "Constructors";
         }
 
-        protected override string GetMemberHtml(string ns, DocObject obj, ConstructorInfo member, bool isIndex)
+        protected override bool IsValidMethod(MethodBase member)
         {
-            string paramHtml = "";
-            string memberHtml = HtmlHelper.GetHtmlName(obj.Name);
+            return member.IsConstructor;
+        }
 
-            if (!isIndex)
-            {
-                ParameterInfo[] parameters = member.GetParameters();
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    ParameterInfo pi = parameters[i];
-                    if (i > 0)
-                        paramHtml += ", ";
-
-                    paramHtml += HtmlHelper.GetHtmlName(pi.ParameterType);
-                }
-
-                return $"{memberHtml}({paramHtml})";
-            }
-
-            return memberHtml;
+        protected override string GetMethodName(DocObject obj, MethodBase member)
+        {
+            return obj.Name;
         }
     }
 }

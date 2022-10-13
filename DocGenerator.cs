@@ -55,8 +55,8 @@ namespace HtmlDocGenerator
                 namespaceList[ns] = namespaceList[ns].Where(x => x.UnderlyingType != null).ToList();
 
                 List<DocObject> objList = namespaceList[ns];
-                string nsEscaped = ns.Replace('.', '_');
-                string nsDestPath = $"{destPath}{nsEscaped}";
+                string nsPath = context.GetFileName(ns);
+                string nsDestPath = $"{destPath}{nsPath}";
                 nsDestPath = Path.GetFullPath(nsDestPath);
 
                 if (!Directory.Exists(nsDestPath))
@@ -64,8 +64,8 @@ namespace HtmlDocGenerator
 
                 foreach (DocObject obj in objList)
                 {
-                    string objEscaped = obj.Name.Replace('<', '_').Replace('>', '_');
-                    obj.PageUrl = $"{nsEscaped}/{objEscaped}.html";
+                    string objEscaped = context.GetFileName(obj.Name);
+                    obj.PageUrl = $"{nsPath}/{objEscaped}.html";
 
                     GenerateObjectPage(context, $"{nsDestPath}\\{objEscaped}.html", ns, obj);
                 }
@@ -111,15 +111,14 @@ namespace HtmlDocGenerator
 
             foreach (string ns in nsList)
             {
-                string nsEscaped = ns.Replace('.', '_');
                 List<DocObject> objList = namespaceList[ns].Where(o => o.UnderlyingType != null).ToList();
 
-                html += GenerateTreeBranch(nsEscaped, ns, () =>
+                html += GenerateTreeBranch(context, ns, ns, () =>
                 {
-                    string innerHtml = GenerateObjectIndex(context, nsEscaped, "Classes", objList, DocObjectSubType.Class);
-                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Structs", objList, DocObjectSubType.Struct);
-                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Interfaces", objList, DocObjectSubType.Interface);
-                    innerHtml += GenerateObjectIndex(context, nsEscaped, "Enums", objList, DocObjectSubType.Enum);
+                    string innerHtml = GenerateObjectIndex(context, ns, "Classes", objList, DocObjectSubType.Class);
+                    innerHtml += GenerateObjectIndex(context, ns, "Structs", objList, DocObjectSubType.Struct);
+                    innerHtml += GenerateObjectIndex(context, ns, "Interfaces", objList, DocObjectSubType.Interface);
+                    innerHtml += GenerateObjectIndex(context, ns, "Enums", objList, DocObjectSubType.Enum);
                     return innerHtml;
                 });
             }
@@ -134,7 +133,7 @@ namespace HtmlDocGenerator
             if (filteredList.Count == 0)
                 return "";
 
-            return GenerateTreeBranch(ns, title, () =>
+            return GenerateTreeBranch(context, ns, title, () =>
             {
                 string html = "";
                 foreach (DocObject obj in filteredList)
@@ -155,7 +154,7 @@ namespace HtmlDocGenerator
                     else
                     {
                         string nsObj = $"{ns}{title}";
-                        html += GenerateTreeBranch(nsObj, obj.HtmlName, () =>
+                        html += GenerateTreeBranch(context, nsObj, obj.HtmlName, () =>
                         {
                             string innerHtml = "";
                             foreach (ObjectSectionGenerator secGen in _objSectionGens)
@@ -167,7 +166,7 @@ namespace HtmlDocGenerator
                                     string secTitle = secGen.GetTitle();
                                     string nsSec = $"{nsObj}{secTitle}";
 
-                                    innerHtml += GenerateTreeBranch(nsSec, secTitle, secHtml, 3);
+                                    innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
                                 }
                             }
 
@@ -181,15 +180,16 @@ namespace HtmlDocGenerator
             }, 1);
         }
 
-        private string GenerateTreeBranch(string ns, string title, Func<string> contentCallback, int depth = 0)
+        private string GenerateTreeBranch(HtmlContext context, string ns, string title, Func<string> contentCallback, int depth = 0)
         {
             string contentHtml = contentCallback?.Invoke() ?? "";
-            return GenerateTreeBranch(ns, title, contentHtml, depth);
+            return GenerateTreeBranch(context, ns, title, contentHtml, depth);
         }
 
-        private string GenerateTreeBranch(string ns, string title, string contentHtml, int depth = 0)
+        private string GenerateTreeBranch(HtmlContext context, string ns, string title, string contentHtml, int depth = 0)
         {
-            string docHtml = $"<div id=\"{ns}{title}\" class=\"sec-namespace sec-namespace{(depth > 0 ? "-noleft" : "")}\">{_nl}";
+            string nsPath = context.GetFileName(ns);
+            string docHtml = $"<div id=\"{nsPath}{title}\" class=\"sec-namespace sec-namespace{(depth > 0 ? "-noleft" : "")}\">{_nl}";
             docHtml += $"<span class=\"namespace-toggle\">{title}</span><br/>{_nl}";
             docHtml += $"    <div class=\"sec-namespace-inner\">{_nl}";
             docHtml += contentHtml;
