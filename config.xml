@@ -22,9 +22,7 @@
 		<script>docs/js/index.js</script>
 	</scripts>
 
-	<index>
-		<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
-	</index>
+	<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
 
 	<sumamry>
 		<maxlength>300</maxlength>

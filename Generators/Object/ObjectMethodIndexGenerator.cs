@@ -43,10 +43,10 @@ namespace HtmlDocGenerator
                         if (i > 0)
                             paramHtml += ", ";
 
-                        paramHtml += HtmlHelper.GetHtmlName(pi.ParameterType);
+                        paramHtml += $"<i class=\"obj-parameter\">{HtmlHelper.GetHtmlName(pi.ParameterType)}</i>";
                     }
 
-                    paramHtml = $"({paramHtml})";
+                    paramHtml = $"<i class=\"obj-parenthesis\">(</i>{paramHtml}<i class=\"obj-aparenthesis\">)</i>";
                 }
 
                 string memberHtml = GetMethodName(obj, member);

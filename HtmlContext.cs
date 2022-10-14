@@ -47,6 +47,8 @@ namespace HtmlDocGenerator
         /// </summary>
         public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
+        public Dictionary<string, List<DocObject>> Namespaces { get; } = new Dictionary<string, List<DocObject>>();
+
         public IndexConfig Index { get; } = new IndexConfig();
 
         public SummaryConfig Summary { get; } = new SummaryConfig();
@@ -66,9 +68,9 @@ namespace HtmlDocGenerator
                 XmlNode nugets = doc["config"]["nuget"];
                 XmlNode template = doc["config"]["template"];
                 XmlNode scripts = doc["config"]["scripts"];
-                XmlNode index = doc["config"]["index"];
                 XmlNode summary = doc["config"]["summary"];
                 XmlNode icons = doc["config"]["icons"];
+                XmlNode intro = doc["config"]["intro"];
 
                 if (dest != null)
                     config.DestinationPath = dest.InnerText;
@@ -76,46 +78,10 @@ namespace HtmlDocGenerator
                 if (template != null)
                 {
                     XmlNode xIndex = template["index"];
-                    if (xIndex != null)
-                    {
-                        string indexPath = $"{config.DestinationPath}{xIndex.InnerText}";
-                        if (File.Exists(indexPath))
-                        {
-                            using (FileStream stream = new FileStream(indexPath, FileMode.Open, FileAccess.Read))
-                            {
-                                using (StreamReader reader = new StreamReader(stream))
-                                {
-                                    config.Template.IndexHtml = reader.ReadToEnd();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            config.Log($"Index page template not found: {indexPath}");
-                            return null;
-                        }
-                    }
+                    config.Template.IndexHtml = config.LoadTemplate(xIndex);
 
                     XmlNode xObject = template["object"];
-                    if (xObject != null)
-                    {
-                        string objPath = $"{config.DestinationPath}{xObject.InnerText}";
-                        if (File.Exists(objPath))
-                        {
-                            using (FileStream stream = new FileStream(objPath, FileMode.Open, FileAccess.Read))
-                            {
-                                using (StreamReader reader = new StreamReader(stream))
-                                {
-                                    config.Template.ObjectHtml = reader.ReadToEnd();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            config.Log($"Object page template not found: {objPath}");
-                            return null;
-                        }
-                    }
+                    config.Template.ObjectHtml = config.LoadTemplate(xObject);
                 }
 
                 foreach (XmlNode child in defs.ChildNodes)
@@ -135,17 +101,10 @@ namespace HtmlDocGenerator
                     });
                 }
 
-                // Index config
-                
-                if(index != null)
-                {
-                    XmlNode intro = index["intro"];
-                    if (intro != null)
-                        config.Index.Intro = intro.InnerText;
-                }
+                if (intro != null)
+                    config.Index.Intro = intro.InnerText;
 
-                // Summary config
-                
+                // Summary config                
                 if(summary != null)
                 {
                     XmlNode sumMaxLength = summary["maxlength"];
@@ -175,6 +134,28 @@ namespace HtmlDocGenerator
             }
 
             return config;
+        }
+
+        private string LoadTemplate(XmlNode pathNode)
+        {
+            if (pathNode != null)
+            {
+                string objPath = $"{DestinationPath}{pathNode.InnerText}";
+                if (File.Exists(objPath))
+                {
+                    using (FileStream stream = new FileStream(objPath, FileMode.Open, FileAccess.Read))
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                            return reader.ReadToEnd();
+                    }
+                }
+                else
+                {
+                    Log($"Template not found: {objPath}");
+                }
+            }
+
+            return null;
         }
 
         public void Log(string message)

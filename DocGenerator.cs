@@ -39,22 +39,19 @@ namespace HtmlDocGenerator
         /// <param name="indexPath"></param>
         public void Generate(HtmlContext context, List<DocData> docs, string destPath, string indexPath)
         {
-            Dictionary<string, List<DocObject>> namespaceList = new Dictionary<string, List<DocObject>>();
             foreach (DocData doc in docs)
             {
                 foreach (DocObject obj in doc.Members.Values)
-                {
-                    CollateNamespaceTypes(obj, "", namespaceList);
-                }
+                    CollateNamespaceTypes(context, obj, "");
             }
 
             // Build per-object pages
-            foreach (string ns in namespaceList.Keys)
+            foreach (string ns in context.Namespaces.Keys)
             {
-                // Filter any non-public types that were documented in the XMl source)
-                namespaceList[ns] = namespaceList[ns].Where(x => x.UnderlyingType != null).ToList();
+                // Filter any non-public types that were documented in the XML source)
+                context.Namespaces[ns] = context.Namespaces[ns].Where(x => x.UnderlyingType != null).ToList();
 
-                List<DocObject> objList = namespaceList[ns];
+                List<DocObject> objList = context.Namespaces[ns];
                 string nsPath = context.GetFileName(ns);
                 string nsDestPath = $"{destPath}{nsPath}";
                 nsDestPath = Path.GetFullPath(nsDestPath);
@@ -71,7 +68,7 @@ namespace HtmlDocGenerator
                 }
             }
 
-            string indexHtml = BuildIndexTree(context, docs, namespaceList);
+            string indexHtml = BuildIndexTree(context, docs, context.Namespaces);
             string html = context.Template.IndexHtml.Replace("[BUILD-INDEX]", indexHtml);
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
@@ -223,15 +220,15 @@ namespace HtmlDocGenerator
             context.Log($"Created page for {ns}.{obj.Name}: {destPath}");
         }
 
-        private void CollateNamespaceTypes(DocObject obj, string ns, Dictionary<string, List<DocObject>> namespaceList)
+        private void CollateNamespaceTypes(HtmlContext context, DocObject obj, string ns)
         {
             // Have we hit a non-namespace object?
             if (obj.Type == DocObjectType.ObjectType)
             {
-                if (!namespaceList.TryGetValue(ns, out List<DocObject> objects))
+                if (!context.Namespaces.TryGetValue(ns, out List<DocObject> objects))
                 {
                     objects = new List<DocObject>();
-                    namespaceList.Add(ns, objects);
+                    context.Namespaces.Add(ns, objects);
                 }
 
                 objects.Add(obj);
@@ -245,7 +242,7 @@ namespace HtmlDocGenerator
                 ns += obj.Name;
 
                 foreach (DocObject member in obj.Members.Values)
-                    CollateNamespaceTypes(member, ns, namespaceList);
+                    CollateNamespaceTypes(context, member, ns);
             }
         }
     }

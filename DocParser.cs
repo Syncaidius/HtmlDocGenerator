@@ -20,11 +20,6 @@ namespace HtmlDocGenerator
             ["M"] = DocObjectType.Method
         };
 
-        public DocParser()
-        {
-
-        }
-
         public DocData ParseXml(FileStream stream)
         {
             DocData doc = new DocData();
