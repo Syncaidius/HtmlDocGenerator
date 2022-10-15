@@ -37,14 +37,8 @@ namespace HtmlDocGenerator
         /// </summary>
         /// <param name="docs"></param>
         /// <param name="indexPath"></param>
-        public void Generate(HtmlContext context, List<DocData> docs, string destPath, string indexPath)
+        public void Generate(HtmlContext context, string destPath, string indexPath)
         {
-            foreach (DocData doc in docs)
-            {
-                foreach (DocObject obj in doc.Members.Values)
-                    CollateNamespaceTypes(context, obj, "");
-            }
-
             // Build per-object pages
             foreach (string ns in context.Namespaces.Keys)
             {
@@ -68,7 +62,7 @@ namespace HtmlDocGenerator
                 }
             }
 
-            string indexHtml = BuildIndexTree(context, docs, context.Namespaces);
+            string indexHtml = BuildIndexTree(context, context.Namespaces);
             string html = context.Template.IndexHtml.Replace("[BUILD-INDEX]", indexHtml);
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
@@ -99,7 +93,7 @@ namespace HtmlDocGenerator
             }
         }
 
-        private string BuildIndexTree(HtmlContext context, List<DocData> docs, Dictionary<string, List<DocObject>> namespaceList)
+        private string BuildIndexTree(HtmlContext context, Dictionary<string, List<DocObject>> namespaceList)
         {
             // Output namespaces
             string html = $"<p>{context.Index.Intro}</p>";
@@ -218,32 +212,6 @@ namespace HtmlDocGenerator
             }
 
             context.Log($"Created page for {ns}.{obj.Name}: {destPath}");
-        }
-
-        private void CollateNamespaceTypes(HtmlContext context, DocObject obj, string ns)
-        {
-            // Have we hit a non-namespace object?
-            if (obj.Type == DocObjectType.ObjectType)
-            {
-                if (!context.Namespaces.TryGetValue(ns, out List<DocObject> objects))
-                {
-                    objects = new List<DocObject>();
-                    context.Namespaces.Add(ns, objects);
-                }
-
-                objects.Add(obj);
-                return;
-            }
-            else
-            {
-                if (ns.Length > 0)
-                    ns += ".";
-
-                ns += obj.Name;
-
-                foreach (DocObject member in obj.Members.Values)
-                    CollateNamespaceTypes(context, member, ns);
-            }
         }
     }
 }

@@ -38,6 +38,7 @@
 	</definitions>
 
 	<nuget>
+		<store>packages\</store>
 		<package>
 			<name>Newtonsoft.Json</name>
 			<version>13.0.1</version>

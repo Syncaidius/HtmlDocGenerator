@@ -12,20 +12,32 @@ namespace HtmlDocGenerator
         string _name;
         Type _type;
 
-        public DocObject(DocData parent, string name, DocObjectType type)
+        public DocObject(string name)
         {
-            ParentDoc = parent;
             Name = name;
-            Type = type;
         }
 
-        public DocObject AddMember(string name, DocObjectType type)
+        public T AddMember<T>(string name, DocObjectType type, Type[] parameters = null, Type[] genericParameters = null)
+            where T : DocMember, new()
         {
-            DocObject member = new DocObject(ParentDoc, name, type);
-            member.Parent = this;
+            if(!Members.TryGetValue(name, out List<DocMember> memList))
+            {
+                memList = new List<DocMember>();
+                Members.Add(name, memList);
+            }
 
-            Members.Add(name, member);
-            return member;
+            foreach(DocMember member in memList)
+            {
+                if (member.IsMatch(this, name, parameters, genericParameters))
+                    return member as T;
+            }
+
+            T newMember = new T();
+            newMember.Type = type;
+            newMember.Set(this, name, parameters, genericParameters);
+
+            memList.Add(newMember);
+            return newMember;
         }
 
         private void BuildTypeInfo()
@@ -72,9 +84,11 @@ namespace HtmlDocGenerator
             }
         }
 
+        public string Namespace { get; set; }
+
         public string HtmlName { get; private set; }
 
-        public Dictionary<string, DocObject> Members { get; } = new Dictionary<string, DocObject>();
+        public Dictionary<string, List<DocMember>> Members { get; } = new Dictionary<string, List<DocMember>>();
 
         public DocObjectType Type { get; set; }
 
@@ -95,14 +109,14 @@ namespace HtmlDocGenerator
 
         public DocObject Parent { get; set; }
 
-        public DocData ParentDoc { get; protected set; }
-
         /// <summary>
         /// Gets the Url to the page containing information about the current <see cref="DocObject"/>.
         /// </summary>
         public string PageUrl { get; set; }
 
         public string Summary { get; set; }
+
+        public DocAssembly Assembly { get; set; }
 
         public MemberInfo[] TypeMembers { get; private set; }
     }

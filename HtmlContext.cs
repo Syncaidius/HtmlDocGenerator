@@ -33,12 +33,17 @@ namespace HtmlDocGenerator
             public string ReadMore { get; set; } = "Read More";
         }
 
-        public string DestinationPath { get; set; } = "docs\\";
+        public string DestinationPath { get; set; } = "docs\\"; 
+        
+        public string NugetStore { get; private set; } = "packages\\";
+
         public TemplateConfig Template { get; } = new TemplateConfig();
 
         public List<string> Definitions { get; } = new List<string>();
 
         public List<string> Scripts { get; } = new List<string>();
+
+        public Dictionary<string, DocAssembly> Assemblies { get; } = new Dictionary<string, DocAssembly>();
 
         public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
 
@@ -49,13 +54,15 @@ namespace HtmlDocGenerator
 
         public Dictionary<string, List<DocObject>> Namespaces { get; } = new Dictionary<string, List<DocObject>>();
 
+        public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
+
         public IndexConfig Index { get; } = new IndexConfig();
 
         public SummaryConfig Summary { get; } = new SummaryConfig();
 
         public static HtmlContext Load(string path)
         {
-            HtmlContext config = new HtmlContext();
+            HtmlContext cxt = new HtmlContext();
             XmlDocument doc = new XmlDocument();
 
             if (File.Exists(path))
@@ -63,77 +70,97 @@ namespace HtmlDocGenerator
                 using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                     doc.Load(stream);
 
-                XmlNode dest = doc["config"]["destination"];
-                XmlNode defs = doc["config"]["definitions"];
-                XmlNode nugets = doc["config"]["nuget"];
-                XmlNode template = doc["config"]["template"];
-                XmlNode scripts = doc["config"]["scripts"];
-                XmlNode summary = doc["config"]["summary"];
-                XmlNode icons = doc["config"]["icons"];
-                XmlNode intro = doc["config"]["intro"];
+                XmlNode cfg = doc["config"];
+                if (cfg == null)
+                {
+                    cxt.Log($"The root 'config' node was not found");
+                    return cxt;
+                }
+
+                XmlNode dest = cfg["destination"];
+                XmlNode defs = cfg["definitions"];
+                XmlNode nuget = cfg["nuget"];
+                XmlNode template = cfg["template"];
+                XmlNode scripts = cfg["scripts"];
+                XmlNode summary = cfg["summary"];
+                XmlNode icons = cfg["icons"];
+                XmlNode intro = cfg["intro"];
+
 
                 if (dest != null)
-                    config.DestinationPath = dest.InnerText;
+                    cxt.DestinationPath = dest.InnerText;
 
                 if (template != null)
                 {
                     XmlNode xIndex = template["index"];
-                    config.Template.IndexHtml = config.LoadTemplate(xIndex);
+                    cxt.Template.IndexHtml = cxt.LoadTemplate(xIndex);
 
                     XmlNode xObject = template["object"];
-                    config.Template.ObjectHtml = config.LoadTemplate(xObject);
+                    cxt.Template.ObjectHtml = cxt.LoadTemplate(xObject);
                 }
 
                 foreach (XmlNode child in defs.ChildNodes)
-                    config.Definitions.Add(child.InnerText);
+                    cxt.Definitions.Add(child.InnerText);
 
-                foreach (XmlNode nug in nugets.ChildNodes)
+                if (nuget != null)
                 {
-                    XmlNode xName = nug["name"];
-                    XmlNode xVersion = nug["version"];
-                    XmlNode xFramework = nug["framework"];
-
-                    config.Packages.Add(new NugetDefinition()
+                    foreach (XmlNode nug in nuget.ChildNodes)
                     {
-                        Name = xName != null ? xName.InnerText : "",
-                        Version = xVersion != null ? xVersion.InnerText : "",
-                        Framework = xFramework != null ? xFramework.InnerText : ""
-                    });
+                        switch (nug.Name)
+                        {
+                            case "store":
+                                cxt.NugetStore = nug.InnerText;
+                                break;
+
+                            case "package":
+                                XmlNode xName = nug["name"];
+                                XmlNode xVersion = nug["version"];
+                                XmlNode xFramework = nug["framework"];
+
+                                cxt.Packages.Add(new NugetDefinition()
+                                {
+                                    Name = xName != null ? xName.InnerText : "",
+                                    Version = xVersion != null ? xVersion.InnerText : "",
+                                    Framework = xFramework != null ? xFramework.InnerText : ""
+                                });
+                                break;
+                        }
+                    }
                 }
 
                 if (intro != null)
-                    config.Index.Intro = intro.InnerText;
+                    cxt.Index.Intro = intro.InnerText;
 
                 // Summary config                
-                if(summary != null)
+                if (summary != null)
                 {
                     XmlNode sumMaxLength = summary["maxlength"];
-                    if(sumMaxLength != null)
+                    if (sumMaxLength != null)
                     {
                         if (int.TryParse(sumMaxLength.InnerText, out int maxLen))
-                            config.Summary.MaxLength = maxLen;
+                            cxt.Summary.MaxLength = maxLen;
                     }
 
                     XmlNode sumReadMore = summary["readmore"];
-                    if(sumReadMore != null)
-                        config.Summary.ReadMore = sumReadMore.InnerText;
+                    if (sumReadMore != null)
+                        cxt.Summary.ReadMore = sumReadMore.InnerText;
                 }
 
                 // Icon config
-                if(icons != null)
+                if (icons != null)
                 {
                     foreach (XmlNode iNode in icons.ChildNodes)
-                        config.Icons.Add(iNode.Name.ToLower(), iNode.InnerText);
+                        cxt.Icons.Add(iNode.Name.ToLower(), iNode.InnerText);
                 }
 
-                if(scripts != null)
+                if (scripts != null)
                 {
                     foreach (XmlNode iNode in scripts.ChildNodes)
-                        config.Scripts.Add(iNode.InnerText);
+                        cxt.Scripts.Add(iNode.InnerText);
                 }
             }
 
-            return config;
+            return cxt;
         }
 
         private string LoadTemplate(XmlNode pathNode)
@@ -203,6 +230,20 @@ namespace HtmlDocGenerator
         public string GetFileName(string text)
         {
             return text.Replace('<', '_').Replace('>', '_').Replace('.', '_'); 
+        }
+
+        public DocObject GetObject(string ns, string objName)
+        {
+            string qualifiedName = $"{ns}.{objName}";
+
+            if(!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj))
+            {
+                obj = new DocObject(objName);
+                obj.Namespace = ns;
+                ObjectsByQualifiedName[qualifiedName] = obj;
+            }
+
+            return obj;
         }
     }
 }

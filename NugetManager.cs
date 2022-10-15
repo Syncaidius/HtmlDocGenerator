@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
-    public class NugetDownloader
+    public class NugetManager
     {
         string _apiUrl;
         HttpClient _http;
@@ -23,15 +24,18 @@ namespace HtmlDocGenerator
             "net2.0",
         };
 
+        Dictionary<string, Assembly> _assemblyCache;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="packageStorePath">The directory path used for storing downloaded nuget packages.</param>
-        public NugetDownloader(string packageStorePath, string apiUrl = "https://api.nuget.org/v3-flatcontainer/")
+        public NugetManager(string packageStorePath, string apiUrl = "https://api.nuget.org/v3-flatcontainer/")
         {
             _http = new HttpClient();
             _apiUrl = apiUrl;
             _storePath = packageStorePath;
+            _assemblyCache = new Dictionary<string, Assembly>();
         }
 
         public async Task<string> GetPackage(NugetDefinition def)
@@ -101,6 +105,31 @@ namespace HtmlDocGenerator
 
                 return destPath;
             }
+        }
+
+        public Assembly LoadPackage(NugetDefinition def)
+        {
+            Task<string> packageTask = GetPackage(def);
+            packageTask.Wait();
+
+            try
+            {
+                string aPath = $"{packageTask.Result}lib\\{def.Framework}\\{def.Name}.dll";
+                aPath = Path.GetFullPath(aPath);
+                Assembly packageAssembly = Assembly.LoadFile(aPath);
+                _assemblyCache.Add(def.Name, packageAssembly);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: Failed to load package '{def.Name}' for framework '{def.Framework}': {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public bool TryGetAssembly(string assemblyName, out Assembly assembly)
+        {
+            return _assemblyCache.TryGetValue(assemblyName, out assembly);
         }
     }
 }
