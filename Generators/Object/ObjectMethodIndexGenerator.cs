@@ -53,5 +53,7 @@ namespace HtmlDocGenerator
                 return $"{memberHtml}{paramHtml}";
             }
         }
+
+        public override MemberTypes MemberType { get; } = MemberTypes.Method;
     }
 }

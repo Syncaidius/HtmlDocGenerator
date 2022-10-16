@@ -23,5 +23,7 @@ namespace HtmlDocGenerator
         {
             return obj.Name;
         }
+
+        public override MemberTypes MemberType { get; } = MemberTypes.Constructor;
     }
 }

@@ -13,5 +13,7 @@ namespace HtmlDocGenerator
         {
             return "Events";
         }
+
+        public override MemberTypes MemberType { get; } = MemberTypes.Event;
     }
 }

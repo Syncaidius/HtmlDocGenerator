@@ -12,13 +12,13 @@ namespace HtmlDocGenerator
 {
     public class DocParser
     {
-        Dictionary<char, DocObjectType> _typeKeys = new Dictionary<char, DocObjectType>()
+        Dictionary<char, XmlMemberType> _typeKeys = new Dictionary<char, XmlMemberType>()
         {
-            ['T'] = DocObjectType.ObjectType,
-            ['E'] = DocObjectType.Event,
-            ['P'] = DocObjectType.Property,
-            ['F'] = DocObjectType.Field,
-            ['M'] = DocObjectType.Method
+            ['T'] = XmlMemberType.ObjectType,
+            ['E'] = XmlMemberType.Event,
+            ['P'] = XmlMemberType.Property,
+            ['F'] = XmlMemberType.Field,
+            ['M'] = XmlMemberType.Method
         };
 
         /// <summary>
@@ -49,7 +49,14 @@ namespace HtmlDocGenerator
                     {
                         DocAssembly docAssembly = ParseAssembly(context, docNode, info, assemblyPath);
                         if (docAssembly != null)
-                            ParseMembers(context, docNode, docAssembly);
+                        {
+                            XmlNode xMembers = docNode["members"];
+                            if (xMembers != null)
+                            {
+                                foreach (XmlNode node in xMembers.ChildNodes)
+                                    ParseMember(context, node);
+                            }
+                        }
                     }
                     else
                     {
@@ -89,7 +96,7 @@ namespace HtmlDocGenerator
 
                         foreach (Type t in aTypes)
                         {
-                            DocObject obj = ParseQualifiedName(context, t.FullName, DocObjectType.ObjectType);
+                            DocObject obj = context.GetObject(t.Namespace, t.Name, true);
                             obj.UnderlyingType = t;
 
                             if (t.IsGenericType)
@@ -106,16 +113,6 @@ namespace HtmlDocGenerator
             return da;
         }
 
-        private void ParseMembers(HtmlContext context, XmlNode docRoot, DocAssembly assembly)
-        {
-            XmlNode xMembers = docRoot["members"];
-            if(xMembers != null)
-            {
-                foreach(XmlNode node in xMembers.ChildNodes)
-                    ParseMember(context, node);
-            }
-        }
-
         private void ParseMember(HtmlContext context, XmlNode memberNode)
         {
             XmlAttribute attName = memberNode.Attributes["name"];
@@ -125,7 +122,7 @@ namespace HtmlDocGenerator
                 return;
             }
 
-            DocObjectType mType = DocObjectType.None;
+            XmlMemberType mType = XmlMemberType.None;
             string typeName = attName.Value;
             char startsWith = typeName[0];
             if (!_typeKeys.TryGetValue(startsWith, out mType))
@@ -136,11 +133,6 @@ namespace HtmlDocGenerator
 
             typeName = typeName.Substring(2); // Get typeName without the [type]: prefix
 
-            ParseQualifiedName(context, typeName, mType);
-        }
-
-        private DocObject ParseQualifiedName(HtmlContext context, string typeName, DocObjectType mType)
-        {
             string ns = "";
             string nsPrev = "";
 
@@ -151,7 +143,6 @@ namespace HtmlDocGenerator
             string cur = "";
 
             List<Type> methodParams = new List<Type>();
-            DocObject memberObj = null;
 
             for (int i = 0; i < typeName.Length; i++)
             {
@@ -206,23 +197,22 @@ namespace HtmlDocGenerator
             if (memberName.Length == 0)
                 memberName = cur;
 
-            if(mType != DocObjectType.ObjectType)
+            DocElement el;
+            if (mType != XmlMemberType.ObjectType)
             {
-                DocObject parentObj = context.GetObject(ns, memberName);
+                objectName = prev;
+                ns = nsPrev;
 
-                if (mType != DocObjectType.Method)
-                    parentObj.AddMember<DocMember>(memberName, mType);
-                else
-                    parentObj.AddMember<DocMethodMember>(memberName, mType, methodParams.ToArray());
-
-                // TODO Add support for multiple members of the same name (dictionary of List<DocMember>).
+                DocObject parentObj = context.GetObject(ns, objectName, false);
+                if (parentObj != null)
+                    el = parentObj.GetMember<DocMethodMember>(memberName, methodParams?.ToArray());
             }
             else
             {
-                memberObj = context.GetObject(ns, memberName);
+                el = context.GetObject(ns, memberName, false);
             }
 
-            return memberObj;
+            // TODO set el.Summary.
         }
     }
 }

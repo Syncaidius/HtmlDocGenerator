@@ -13,5 +13,7 @@ namespace HtmlDocGenerator
         {
             return "Properties";
         }
+
+        public override MemberTypes MemberType { get; } = MemberTypes.Property;
     }
 }

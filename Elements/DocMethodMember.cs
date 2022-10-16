@@ -9,23 +9,14 @@ namespace HtmlDocGenerator
 {
     public class DocMethodMember : DocMember
     {
-        public override void Set(DocObject obj, string name, Type[] parameters = null, Type[] genericParameters = null)
-        {
-            BindingFlags bFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-            Info = obj.UnderlyingType.GetMethod(name, genericParameters.Length, bFlags, null, parameters, null);
-            if(Info != null)
-            {
-                Parameters = parameters ?? new Type[0];
-                GenericParameters = genericParameters ?? new Type[0];
-            }
-        }
+        public DocMethodMember(MethodBase info) : base(info) { }
 
         public override bool IsMatch(DocObject obj, string name, Type[] parameters = null, Type[] genericParameters = null)
         {
             bool parametersMatch = TypeArrayMatch(Parameters, parameters);
             bool genericsMatch = TypeArrayMatch(GenericParameters, genericParameters);
 
-            return parametersMatch && genericsMatch && name == Info.Name;
+            return parametersMatch && genericsMatch && name == BaseInfo.Name;
         }
 
         private bool TypeArrayMatch(Type[] a, Type[] b)

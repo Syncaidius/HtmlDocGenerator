@@ -205,7 +205,7 @@ namespace HtmlDocGenerator
 
         public string GetIcon(DocObject obj, string pathPrefix = "")
         {
-            string iconName = obj.SubType.ToString().ToLower();
+            string iconName = obj.DocType.ToString().ToLower();
             return GetIcon(iconName, pathPrefix);
         }
 
@@ -232,15 +232,22 @@ namespace HtmlDocGenerator
             return text.Replace('<', '_').Replace('>', '_').Replace('.', '_'); 
         }
 
-        public DocObject GetObject(string ns, string objName)
+        public DocObject GetObject(string ns, string objName, bool allowCreate)
         {
             string qualifiedName = $"{ns}.{objName}";
 
-            if(!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj))
+            if (!Namespaces.TryGetValue(ns, out List<DocObject> nsList) && allowCreate)
+            {
+                nsList = new List<DocObject>();
+                Namespaces.Add(ns, nsList);
+            }
+
+            if (!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj) && allowCreate)
             {
                 obj = new DocObject(objName);
                 obj.Namespace = ns;
                 ObjectsByQualifiedName[qualifiedName] = obj;
+                nsList.Add(obj);
             }
 
             return obj;

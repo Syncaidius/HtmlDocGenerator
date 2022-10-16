@@ -16,16 +16,16 @@ namespace HtmlDocGenerator
     {
         protected override string OnGenerate(HtmlContext config, string ns, DocObject obj)
         {
-            IEnumerable<T> members = obj.TypeMembers.Where(x => (x as T) != null).Cast<T>();
             string html = "";
+            List<DocMember> members = obj.MembersByType[MemberType];
 
-            if (members.Count() > 0)
+            if (members.Count > 0)
             {
-                members = members.OrderBy(x => x.Name);
                 string contentHtml = "";
 
-                foreach (T member in members)
+                foreach (DocMember dm in members)
                 {
+                    T member = dm.BaseInfo as T;
                     string memHtml = GetMemberHtml(ns, obj, member, false);
                     if (memHtml.Length == 0)
                         continue;
@@ -36,11 +36,7 @@ namespace HtmlDocGenerator
                     Html(ref contentHtml, $"   <td>{iconHtml}</td>");
                     Html(ref contentHtml, $"   <td>{memHtml}</td>");
 
-                    string mSummary = "&nbsp;";
-                    if (obj.Members.TryGetValue(member.Name, out DocObject memObj))
-                        mSummary = memObj.Summary;
-
-                    Html(ref contentHtml, $"<td>{mSummary}</td>");
+                    Html(ref contentHtml, $"<td>{dm.Summary}</td>");
                     Html(ref contentHtml, $"</tr>");
                 }
 
@@ -61,12 +57,12 @@ namespace HtmlDocGenerator
 
         public override sealed string GenerateIndexTreeItems(HtmlContext config, string ns, DocObject obj)
         {
-            IEnumerable<T> members = obj.TypeMembers.Where(x => (x as T) != null).Cast<T>();
-            if (members.Count() == 0)
+            if (obj.MembersByType[MemberType].Count == 0)
                 return "";
 
             string html = "";
             string contentHtml = "";
+            IEnumerable<T> members = obj.MembersByType[MemberType].Cast<T>();
 
             foreach (T member in members)
             {
@@ -105,5 +101,7 @@ namespace HtmlDocGenerator
         {
             return HtmlHelper.GetHtmlName(member.Name);
         }
+
+        public abstract MemberTypes MemberType { get; }
     }
 }
