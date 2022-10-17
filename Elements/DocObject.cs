@@ -72,6 +72,10 @@ namespace HtmlDocGenerator
                     byTypeList.Add(dm);
                 }
 
+                // Sort member lists
+                foreach (List<DocMember> objList in MembersByType.Values)
+                    objList.OrderBy(o => o.Name);
+
                 if (_type.IsClass)
                 {
                     DocType = DocObjectType.Class;

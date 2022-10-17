@@ -30,7 +30,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             if (_context == null)
                 return;
 
-            //DocGenerator generator = new DocGenerator();
+            DocGenerator generator = new DocGenerator();
             DocParser parser = new DocParser();
             _nuget = new NugetManager(PACKAGE_STORE_PATH);
 
@@ -46,7 +46,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             if(!Path.IsPathFullyQualified(destPath))
                 destPath = Path.GetFullPath(destPath);
 
-            //generator.Generate(context, docs, $"{destPath}\\", $"{destPath}\\index.html");
+            generator.Generate(_context, $"{destPath}\\", $"{destPath}\\index.html");
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

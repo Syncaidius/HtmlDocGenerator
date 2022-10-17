@@ -17,39 +17,40 @@ namespace HtmlDocGenerator
         protected override string OnGenerate(HtmlContext config, string ns, DocObject obj)
         {
             string html = "";
-            List<DocMember> members = obj.MembersByType[MemberType];
+            if (!obj.MembersByType.TryGetValue(MemberType, out List<DocMember> members))
+                return html;
 
-            if (members.Count > 0)
+            if (members.Count == 0)
+                return "";
+
+            string contentHtml = "";
+
+            foreach (DocMember dm in members)
             {
-                string contentHtml = "";
+                T member = dm.BaseInfo as T;
+                string memHtml = GetMemberHtml(ns, obj, member, false);
+                if (memHtml.Length == 0)
+                    continue;
 
-                foreach (DocMember dm in members)
-                {
-                    T member = dm.BaseInfo as T;
-                    string memHtml = GetMemberHtml(ns, obj, member, false);
-                    if (memHtml.Length == 0)
-                        continue;
+                string iconHtml = config.GetIcon(member, "../");
 
-                    string iconHtml = config.GetIcon(member, "../");
+                Html(ref contentHtml, "<tr>");
+                Html(ref contentHtml, $"   <td>{iconHtml}</td>");
+                Html(ref contentHtml, $"   <td>{memHtml}</td>");
 
-                    Html(ref contentHtml, "<tr>");
-                    Html(ref contentHtml, $"   <td>{iconHtml}</td>");
-                    Html(ref contentHtml, $"   <td>{memHtml}</td>");
+                Html(ref contentHtml, $"<td>{dm.Summary}</td>");
+                Html(ref contentHtml, $"</tr>");
+            }
 
-                    Html(ref contentHtml, $"<td>{dm.Summary}</td>");
-                    Html(ref contentHtml, $"</tr>");
-                }
-
-                if (contentHtml.Length > 0)
-                {
-                    Html(ref html, "<table><thead><tr>");
-                    Html(ref html, $"   <th class=\"obj-section-icon\">&nbsp;</th>");
-                    Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
-                    Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
-                    Html(ref html, "</tr></thead><tbody>");
-                    Html(ref html, contentHtml);
-                    Html(ref html, "</tbody></table><br/>");
-                }
+            if (contentHtml.Length > 0)
+            {
+                Html(ref html, "<table><thead><tr>");
+                Html(ref html, $"   <th class=\"obj-section-icon\">&nbsp;</th>");
+                Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
+                Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
+                Html(ref html, "</tr></thead><tbody>");
+                Html(ref html, contentHtml);
+                Html(ref html, "</tbody></table><br/>");
             }
 
             return html;
@@ -57,26 +58,31 @@ namespace HtmlDocGenerator
 
         public override sealed string GenerateIndexTreeItems(HtmlContext config, string ns, DocObject obj)
         {
-            if (obj.MembersByType[MemberType].Count == 0)
+            string html = "";
+
+            if (!obj.MembersByType.TryGetValue(MemberType, out List<DocMember> memList))
+                return html;
+
+            if (memList.Count == 0)
                 return "";
 
-            string html = "";
             string contentHtml = "";
-            IEnumerable<T> members = obj.MembersByType[MemberType].Cast<T>();
 
-            foreach (T member in members)
+            foreach (DocMember m in memList)
             {
-                string memHtmlName = HtmlHelper.GetHtmlName(member.Name);
+                T info = m.BaseInfo as T;
+
+                string memHtmlName = HtmlHelper.GetHtmlName(info.Name);
                 if (memHtmlName.Length == 0)
                     continue;
 
                 string nsMember = $"{ns}-{memHtmlName}";
-                string memberHtml = GetMemberHtml(nsMember, obj, member, true);
+                string memberHtml = GetMemberHtml(nsMember, obj, info, true);
 
                 if (memberHtml.Length == 0)
                     continue;
 
-                string htmlIcon = config.GetIcon(member);
+                string htmlIcon = config.GetIcon(info);
 
                 contentHtml += $"   <tr id=\"{nsMember}\" class=\"sec-namespace-obj\">{Environment.NewLine}";
                 contentHtml += $"       <td>{htmlIcon}</td>{Environment.NewLine}";

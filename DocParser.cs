@@ -54,7 +54,12 @@ namespace HtmlDocGenerator
                             if (xMembers != null)
                             {
                                 foreach (XmlNode node in xMembers.ChildNodes)
+                                {
+                                    if (node.Name != "member")
+                                        continue;
+
                                     ParseMember(context, node);
+                                }
                             }
                         }
                     }

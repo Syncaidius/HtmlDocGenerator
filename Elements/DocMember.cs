@@ -22,6 +22,11 @@ namespace HtmlDocGenerator
             return BaseInfo.Name == name;
         }
 
+        public override string ToString()
+        {
+            return $"{BaseInfo.Name} - Type: {Type}";
+        }
+
         public MemberTypes Type => BaseInfo.MemberType;
     }
 }
