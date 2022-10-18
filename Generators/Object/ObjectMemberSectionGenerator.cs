@@ -68,8 +68,13 @@ namespace HtmlDocGenerator
 
             string contentHtml = "";
 
+            DocMember prev = null;
+
             foreach (DocMember m in memList)
             {
+                if (prev?.BaseInfo.Name == m.BaseInfo.Name)
+                    continue;
+
                 T info = m.BaseInfo as T;
 
                 string memHtmlName = HtmlHelper.GetHtmlName(info.Name);
@@ -88,6 +93,8 @@ namespace HtmlDocGenerator
                 contentHtml += $"       <td>{htmlIcon}</td>{Environment.NewLine}";
                 contentHtml += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{memberHtml}</span></td>{Environment.NewLine}";
                 contentHtml += $"    </tr>{Environment.NewLine}";
+
+                prev = m;
             }
 
             if (contentHtml.Length > 0)

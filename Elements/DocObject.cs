@@ -76,6 +76,7 @@ namespace HtmlDocGenerator
                 foreach (List<DocMember> objList in MembersByType.Values)
                     objList.OrderBy(o => o.Name);
 
+                // Figure out the type of object that is defined.
                 if (_type.IsClass)
                 {
                     DocType = DocObjectType.Class;
