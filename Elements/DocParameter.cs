@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace HtmlDocGenerator
+{
+    public class DocParameter : DocElement
+    {
+        public DocParameter(ParameterInfo info) : base(info.Name)
+        {
+            Info = info;
+        }
+
+        public ParameterInfo Info { get; }
+    }
+}

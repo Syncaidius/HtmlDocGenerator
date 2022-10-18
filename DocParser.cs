@@ -93,24 +93,17 @@ namespace HtmlDocGenerator
                     context.Assemblies.Add(da.Name, da);
 
                     // Run through the public types in the assembly.
-                    try
-                    {
-                        context.Log($"Retrieving type list for '{da.Name}'");
-                        Type[] aTypes = da.Assembly.GetExportedTypes();
-                        context.Log($"Retrieved {aTypes.Length} public types for '{da.Name}'");
+                    context.Log($"Retrieving type list for '{da.Name}'");
+                    Type[] aTypes = da.Assembly.GetExportedTypes();
+                    context.Log($"Retrieved {aTypes.Length} public types for '{da.Name}'");
 
-                        foreach (Type t in aTypes)
-                        {
-                            DocObject obj = context.GetObject(t.Namespace, t.Name, true);
-                            obj.UnderlyingType = t;
-
-                            if (t.IsGenericType)
-                                obj.Name = HtmlHelper.GetHtmlName(t);
-                        }
-                    }
-                    catch (Exception ex)
+                    foreach (Type t in aTypes)
                     {
-                        context.Error($"Failed to retrieve public types from '{da.Name}': {ex.Message}");
+                        DocObject obj = context.GetObject(t.Namespace, t.Name, true);
+                        obj.UnderlyingType = t;
+
+                        if (t.IsGenericType)
+                            obj.Name = HtmlHelper.GetHtmlName(t);
                     }
                 }
             }
@@ -202,10 +195,11 @@ namespace HtmlDocGenerator
             if (memberName.Length == 0)
                 memberName = cur;
 
-            DocElement el;
+            DocElement el = null;
             if (mType != XmlMemberType.ObjectType)
             {
-                objectName = prev;
+                if(objectName.Length == 0)
+                    objectName = prev;
                 ns = nsPrev;
 
                 DocObject parentObj = context.GetObject(ns, objectName, false);
@@ -217,7 +211,35 @@ namespace HtmlDocGenerator
                 el = context.GetObject(ns, memberName, false);
             }
 
-            // TODO set el.Summary.
+            if (el != null)
+            {
+                foreach (XmlNode sumNode in memberNode)
+                {
+                    switch (sumNode.Name)
+                    {
+                        case "summary":
+                            el.Summary = ParseSummary(sumNode);
+                            break;
+
+                        case "param":
+                            if (el is DocMethodMember method)
+                            {
+                                XmlAttribute attParamName = sumNode.Attributes["name"];
+                                if (attParamName != null)
+                                {
+                                    if (method.ParametersByName.TryGetValue(attParamName.Value, out DocParameter dp))
+                                        dp.Summary = ParseSummary(sumNode);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        private string ParseSummary(XmlNode xmlNode)
+        {
+            return xmlNode.InnerText;
         }
     }
 }

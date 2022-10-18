@@ -47,14 +47,22 @@ namespace HtmlDocGenerator
                     DocMember dm = null;
                     switch (member)
                     {
-                        case MethodBase mb: 
-                            dm = new DocMethodMember(mb); 
+                        case MethodInfo mb:
+                            if (!mb.IsSpecialName)
+                                dm = new DocMethodMember(mb);
+                            break;
+
+                        case ConstructorInfo ci:
+                                dm = new DocMethodMember(ci);
                             break;
 
                         default:
                             dm = new DocMember(member);
                             break;
                     }
+
+                    if (dm == null)
+                        continue;
 
                     if(!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
                     {
