@@ -8,7 +8,7 @@ namespace HtmlDocGenerator
 {
     public static class HtmlHelper
     {
-        public static string GetHtmlName(string name)
+        public static string GetHtml(string name)
         {
             return name.Replace("<", "&lt;").Replace(">", "&gt;");
         }

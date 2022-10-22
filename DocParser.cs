@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -18,7 +21,8 @@ namespace HtmlDocGenerator
             ['E'] = XmlMemberType.Event,
             ['P'] = XmlMemberType.Property,
             ['F'] = XmlMemberType.Field,
-            ['M'] = XmlMemberType.Method
+            ['M'] = XmlMemberType.Method,
+            ['!'] = XmlMemberType.Invalid
         };
 
         /// <summary>
@@ -120,19 +124,57 @@ namespace HtmlDocGenerator
                 return;
             }
 
-            XmlMemberType mType = XmlMemberType.None;
-            string typeName = attName.Value;
+            DocElement el = ParseXmlName(context, attName.Value, out XmlMemberType mType, out string mName);
+
+            if (el != null)
+            {
+                foreach (XmlNode sumNode in memberNode)
+                {
+                    switch (sumNode.Name)
+                    {
+                        case "summary":
+                            el.Summary = ParseSummary(context, sumNode.InnerXml);
+                            break;
+
+                        case "param":
+                            if (el is DocMethodMember method)
+                            {
+                                XmlAttribute attParamName = sumNode.Attributes["name"];
+                                if (attParamName != null)
+                                {
+                                    if (method.ParametersByName.TryGetValue(attParamName.Value, out DocParameter dp))
+                                        dp.Summary = ParseSummary(context, sumNode.InnerXml);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        private DocElement ParseXmlName(HtmlContext context, string typeName, out XmlMemberType mType, out string name)
+        {
+            typeName = typeName.Replace("&lt;", "<").Replace("&gt;", ">");
+            string ns = "";
+            string nsPrev = "";
+
+            mType = XmlMemberType.None;
+            name = "";
             char startsWith = typeName[0];
             if (!_typeKeys.TryGetValue(startsWith, out mType))
             {
                 context.Error($"Invalid type-name prefix '{startsWith}' for '{typeName}'");
-                return;
+                return null;
             }
 
             typeName = typeName.Substring(2); // Get typeName without the [type]: prefix
 
-            string ns = "";
-            string nsPrev = "";
+            if (mType == XmlMemberType.Invalid)
+            {
+                context.Error($"Invalid type '{typeName}' detected. Cannot parse XML name. Starts with '{startsWith}' operator");
+                name = typeName;
+                return null;
+            }
 
             string objectName = "";
             string memberName = "";
@@ -198,7 +240,7 @@ namespace HtmlDocGenerator
             DocElement el = null;
             if (mType != XmlMemberType.ObjectType)
             {
-                if(objectName.Length == 0)
+                if (objectName.Length == 0)
                     objectName = prev;
                 ns = nsPrev;
 
@@ -211,35 +253,108 @@ namespace HtmlDocGenerator
                 el = context.GetObject(ns, memberName, false);
             }
 
-            if (el != null)
-            {
-                foreach (XmlNode sumNode in memberNode)
-                {
-                    switch (sumNode.Name)
-                    {
-                        case "summary":
-                            el.Summary = ParseSummary(sumNode);
-                            break;
 
-                        case "param":
-                            if (el is DocMethodMember method)
-                            {
-                                XmlAttribute attParamName = sumNode.Attributes["name"];
-                                if (attParamName != null)
-                                {
-                                    if (method.ParametersByName.TryGetValue(attParamName.Value, out DocParameter dp))
-                                        dp.Summary = ParseSummary(sumNode);
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
+            return el;
         }
 
-        private string ParseSummary(XmlNode xmlNode)
+        private string ParseSummary(HtmlContext context, string xmlText, XmlDocument xmlDoc = null)
         {
-            return xmlNode.InnerText;
+            xmlDoc = xmlDoc ?? new XmlDocument();
+            int nodeStart = 0;
+
+            bool tagStarted = false;
+            bool inOpenNode = false; // True if a <tag> has been parsed without a closing </tag>.
+            char cPrev = '\0';
+            string summary = "";
+
+            for(int i = 0; i < xmlText.Length; i++)
+            {
+                char c = xmlText[i];
+
+                switch (c)
+                {
+                    case '<':
+                        if (!tagStarted)
+                        {
+                            if (inOpenNode)
+                            {
+                                // Check if we're starting a closing </tag>.
+                                if (i < xmlText.Length - 1 && xmlText[i + 1] != '/')
+                                {
+                                    int closeIndex = xmlText.IndexOf('>', i, xmlText.Length - i);
+                                    if (closeIndex > -1)
+                                    {
+                                        string nXml = xmlText.Substring(i, xmlText.Length - closeIndex);
+                                        string nText = ParseSummary(context, nXml, xmlDoc);
+                                        xmlText = xmlText.Replace(nXml, nText);
+                                        summary += nText;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                nodeStart = i;
+                                tagStarted = true;
+                            }
+                        }
+                        break;
+
+                    case '>':
+                        if (tagStarted)
+                        {
+                            // Consider a "/>" inline tag terminator.
+                            if (inOpenNode || cPrev == '/') 
+                            {
+                                int len = (i - nodeStart) + 1;
+                                string nXml = xmlText.Substring(nodeStart, len);
+                                string nText = ParseSummaryXml(context, nXml, xmlDoc);
+                                xmlText = xmlText.Replace(nXml, nText);
+
+                                
+                                summary += nText;
+                                i = nodeStart + (nText.Length-1);
+                                c = xmlText[i]; // Recheck current char.
+                                inOpenNode = false;
+                            }
+
+                            tagStarted = false;
+                        }
+                        break;
+
+                    default:
+                        if (!inOpenNode && !tagStarted)
+                            summary += c;
+                        break;
+                }
+
+                cPrev = c;
+            }
+
+            return summary;
+        }
+
+        private string ParseSummaryXml(HtmlContext context, string xml, XmlDocument xmlDoc)
+        {
+            xmlDoc.LoadXml(xml);
+            XmlNode subNode = xmlDoc.FirstChild;
+            string summary = "";
+
+            switch (subNode.Name)
+            {
+                case "see":
+                    XmlAttribute attCRef = subNode.Attributes["cref"];
+                    if (attCRef != null)
+                    {
+                        DocElement refObj = ParseXmlName(context, attCRef.Value, out XmlMemberType mType, out string mName);
+                        if (refObj != null)
+                            summary = $"<a href=\"{refObj.PageUrl}\">{refObj.Name}</a>";
+                        else if (mType == XmlMemberType.Invalid)
+                            summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
+                    }
+                    break;
+            }
+
+            return summary;
         }
     }
 }

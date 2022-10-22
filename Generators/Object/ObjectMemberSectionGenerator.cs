@@ -77,7 +77,7 @@ namespace HtmlDocGenerator
 
                 T info = m.BaseInfo as T;
 
-                string memHtmlName = HtmlHelper.GetHtmlName(info.Name);
+                string memHtmlName = HtmlHelper.GetHtml(info.Name);
                 if (memHtmlName.Length == 0)
                     continue;
 
@@ -112,7 +112,7 @@ namespace HtmlDocGenerator
 
         protected virtual string GetMemberHtml(string ns, DocObject obj, T member, bool isIndex)
         {
-            return HtmlHelper.GetHtmlName(member.Name);
+            return HtmlHelper.GetHtml(member.Name);
         }
 
         public abstract MemberTypes MemberType { get; }

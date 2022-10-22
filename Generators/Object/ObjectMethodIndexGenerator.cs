@@ -21,7 +21,7 @@ namespace HtmlDocGenerator
 
         protected virtual string GetMethodName(DocObject obj, MethodBase member)
         {
-            return HtmlHelper.GetHtmlName(member.Name);
+            return HtmlHelper.GetHtml(member.Name);
         }
 
         protected override sealed string GetMemberHtml(string ns, DocObject obj, MethodBase member, bool isIndex)

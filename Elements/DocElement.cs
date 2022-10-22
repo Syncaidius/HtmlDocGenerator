@@ -26,13 +26,15 @@ namespace HtmlDocGenerator
 
         public string HtmlName { get; private set; }
 
+        public string Namespace { get; set; }
+
         public string Name
         {
             get => _name;
             set
             {
                 _name = value;
-                HtmlName = HtmlHelper.GetHtmlName(_name);
+                HtmlName = HtmlHelper.GetHtml(_name);
             }
         }
     }

@@ -64,6 +64,8 @@ namespace HtmlDocGenerator
                     if (dm == null)
                         continue;
 
+                    dm.Namespace = Namespace;
+
                     if(!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
                     {
                         memList = new List<DocMember>();
@@ -108,9 +110,6 @@ namespace HtmlDocGenerator
             return $"{Name} - {XmlType} - Members: {MembersByName.Count}";
         }
 
-
-        public string Namespace { get; set; }
-
         public Dictionary<string, List<DocMember>> MembersByName { get; } = new Dictionary<string, List<DocMember>>();
 
         public Dictionary<MemberTypes, List<DocMember>> MembersByType { get; } = new Dictionary<MemberTypes, List<DocMember>>();
@@ -153,6 +152,8 @@ namespace HtmlDocGenerator
         Property = 7,
 
         Method = 8,
+
+        Invalid = 16,
     }
 
     public enum DocObjectType
