@@ -40,7 +40,10 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
                 _nuget.LoadPackage(nd);
 
             foreach (string def in _context.Definitions)
-                parser.ParseXml(_context, def);
+                parser.LoadXml(_context, def);
+
+            foreach (DocAssembly da in _context.Assemblies.Values)
+                parser.ParseXml(_context, da);
 
             string destPath = _context.DestinationPath;
             if(!Path.IsPathFullyQualified(destPath))

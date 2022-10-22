@@ -31,7 +31,7 @@ namespace HtmlDocGenerator
         /// <param name="context">The <see cref="HtmlContext"/> to which the parsed XML will be added.</param>
         /// <param name="xmlPath">The path of the XML summary file to be parsed.</param>
         /// <param name="assemblyPath">A custom path to the assembly file from which the xml summary file was generated.</param>
-        public void ParseXml(HtmlContext context, string xmlPath, string assemblyPath = null)
+        public void LoadXml(HtmlContext context, string xmlPath, string assemblyPath = null)
         {
             FileInfo info = new FileInfo(xmlPath);
             if (!info.Exists)
@@ -48,71 +48,67 @@ namespace HtmlDocGenerator
                     XmlDocument xml = new XmlDocument();
                     xml.Load(reader);
 
-                    XmlNode docNode = xml["doc"];
-                    if (docNode != null)
-                    {
-                        DocAssembly docAssembly = ParseAssembly(context, docNode, info, assemblyPath);
-                        if (docAssembly != null)
-                        {
-                            XmlNode xMembers = docNode["members"];
-                            if (xMembers != null)
-                            {
-                                foreach (XmlNode node in xMembers.ChildNodes)
-                                {
-                                    if (node.Name != "member")
-                                        continue;
+                    XmlNode docRoot = xml["doc"];
+                    if (docRoot == null) {
+                        context.Error($"The root 'doc' node was not found. Unable to continue.");
+                        return;
+                    }
 
-                                    ParseMember(context, node);
-                                }
+                    //LoadXmlAssembly(context, docNode, info, assemblyPath);
+                    XmlNode xAssembly = docRoot["assembly"];
+
+                    if (xAssembly != null)
+                    {
+                        if (!context.Assemblies.TryGetValue(xAssembly.InnerText, out DocAssembly da))
+                        {
+                            da = new DocAssembly();
+                            da.Name = xAssembly.InnerText;
+                            da.FilePath = assemblyPath;
+
+                            if (string.IsNullOrWhiteSpace(da.FilePath))
+                                da.FilePath = $"{info.Directory}\\{da.Name}.dll";
+
+                            if (!da.Load(context))
+                                return;
+
+                            context.Assemblies.Add(da.Name, da);
+                        }
+
+                        if(da.XmlRoot == null)
+                        {
+                            // Run through the public types in the assembly.
+                            da.XmlRoot = docRoot;
+                            context.Log($"Retrieving type list for '{da.Name}'");
+                            Type[] aTypes = da.Assembly.GetExportedTypes();
+                            context.Log($"Retrieved {aTypes.Length} public types for '{da.Name}'");
+
+                            foreach (Type t in aTypes)
+                            {
+                                DocObject obj = context.CreateObject(t);
+                                obj.UnderlyingType = t;
+
+                                if (t.IsGenericType)
+                                    obj.Name = HtmlHelper.GetHtmlName(t);
                             }
                         }
-                    }
-                    else
-                    {
-                        context.Error($"The root 'doc' node was not found. Unable to continue.");
                     }
                 }
             }
         }
 
-        private DocAssembly ParseAssembly(HtmlContext context, XmlNode docRoot, FileInfo xmlInfo, string assemblyPath)
+        public void ParseXml(HtmlContext context, DocAssembly assembly)
         {
-            XmlNode xAssembly = docRoot["assembly"];
-            DocAssembly da = null;
-
-            if (xAssembly != null)
+            XmlNode xMembers = assembly.XmlRoot["members"];
+            if (xMembers != null)
             {
-                if (!context.Assemblies.TryGetValue(xAssembly.InnerText, out da))
+                foreach (XmlNode node in xMembers.ChildNodes)
                 {
-                    da = new DocAssembly();
-                    da.Name = xAssembly.InnerText;
-                    da.FilePath = assemblyPath;
+                    if (node.Name != "member")
+                        continue;
 
-                    if (string.IsNullOrWhiteSpace(da.FilePath))
-                        da.FilePath = $"{xmlInfo.Directory}\\{da.Name}.dll";
-
-                    if (!da.Load(context))
-                        return null;
-                        
-                    context.Assemblies.Add(da.Name, da);
-
-                    // Run through the public types in the assembly.
-                    context.Log($"Retrieving type list for '{da.Name}'");
-                    Type[] aTypes = da.Assembly.GetExportedTypes();
-                    context.Log($"Retrieved {aTypes.Length} public types for '{da.Name}'");
-
-                    foreach (Type t in aTypes)
-                    {
-                        DocObject obj = context.GetObject(t.Namespace, t.Name, true);
-                        obj.UnderlyingType = t;
-
-                        if (t.IsGenericType)
-                            obj.Name = HtmlHelper.GetHtmlName(t);
-                    }
+                    ParseMember(context, node);
                 }
             }
-
-            return da;
         }
 
         private void ParseMember(HtmlContext context, XmlNode memberNode)
@@ -244,13 +240,13 @@ namespace HtmlDocGenerator
                     objectName = prev;
                 ns = nsPrev;
 
-                DocObject parentObj = context.GetObject(ns, objectName, false);
+                DocObject parentObj = context.GetObject(ns, objectName);
                 if (parentObj != null)
                     el = parentObj.GetMember<DocMethodMember>(memberName, methodParams?.ToArray());
             }
             else
             {
-                el = context.GetObject(ns, memberName, false);
+                el = context.GetObject(ns, memberName);
             }
 
 

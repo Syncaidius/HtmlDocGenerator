@@ -9,7 +9,7 @@ namespace HtmlDocGenerator
 {
     public class DocMethodMember : DocMember
     {
-        public DocMethodMember(MethodBase info) : base(info)
+        public DocMethodMember(DocObject parent, MethodBase info) : base(parent, info)
         {
             ParameterInfo[] parameters = info.GetParameters();
 

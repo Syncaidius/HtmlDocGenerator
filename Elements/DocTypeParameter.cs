@@ -16,5 +16,7 @@ namespace HtmlDocGenerator
         }
 
         public Type ParameterType { get; }
+
+        public override string Namespace => ParameterType.Namespace;
     }
 }

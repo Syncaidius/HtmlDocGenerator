@@ -26,7 +26,7 @@ namespace HtmlDocGenerator
 
         public string HtmlName { get; private set; }
 
-        public string Namespace { get; set; }
+        public abstract string Namespace { get; }
 
         public string Name
         {

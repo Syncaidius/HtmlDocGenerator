@@ -57,7 +57,7 @@ namespace HtmlDocGenerator
                 foreach (DocObject obj in objList)
                 {
                     string objEscaped = context.GetFileName(obj.Name);
-                    obj.PageUrl = $"{nsPath}/{objEscaped}.html";
+                    obj.PageUrl = $"{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
 
                     GenerateObjectPage(context, $"{nsDestPath}\\{objEscaped}.html", ns, obj);
                 }

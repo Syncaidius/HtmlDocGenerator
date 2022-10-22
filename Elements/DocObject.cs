@@ -49,22 +49,20 @@ namespace HtmlDocGenerator
                     {
                         case MethodInfo mb:
                             if (!mb.IsSpecialName)
-                                dm = new DocMethodMember(mb);
+                                dm = new DocMethodMember(this, mb);
                             break;
 
                         case ConstructorInfo ci:
-                                dm = new DocMethodMember(ci);
+                                dm = new DocMethodMember(this, ci);
                             break;
 
                         default:
-                            dm = new DocMember(member);
+                            dm = new DocMember(this, member);
                             break;
                     }
 
                     if (dm == null)
                         continue;
-
-                    dm.Namespace = Namespace;
 
                     if(!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
                     {
@@ -134,38 +132,7 @@ namespace HtmlDocGenerator
         public DocObject Parent { get; set; }
 
         public DocAssembly Assembly { get; set; }
-    }
 
-    public enum XmlMemberType
-    {
-        None = 0,
-         
-        /// <summary>
-        /// A valid object type.
-        /// </summary>
-        ObjectType = 1,
-
-        Event = 5,
-
-        Field = 6,
-
-        Property = 7,
-
-        Method = 8,
-
-        Invalid = 16,
-    }
-
-    public enum DocObjectType
-    {
-        Unknown = 0,
-         
-        Class = 1,
-
-        Struct = 2,
-
-        Enum = 3,
-
-        Interface = 4,
+        public override string Namespace => _type.Namespace;
     }
 }

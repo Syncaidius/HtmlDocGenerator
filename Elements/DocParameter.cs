@@ -16,5 +16,7 @@ namespace HtmlDocGenerator
         }
 
         public ParameterInfo Info { get; }
+
+        public override string Namespace => Info.ParameterType.Namespace;
     }
 }

@@ -232,24 +232,33 @@ namespace HtmlDocGenerator
             return text.Replace('<', '_').Replace('>', '_').Replace('.', '_'); 
         }
 
-        public DocObject GetObject(string ns, string objName, bool allowCreate)
+        public DocObject CreateObject(Type type)
         {
-            string qualifiedName = $"{ns}.{objName}";
+            string ns = type.Namespace;
+            string qualifiedName = $"{ns}.{type.Name}";
 
-            if (!Namespaces.TryGetValue(ns, out List<DocObject> nsList) && allowCreate)
+            if (!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj))
             {
-                nsList = new List<DocObject>();
-                Namespaces.Add(ns, nsList);
-            }
-
-            if (!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj) && allowCreate)
-            {
-                obj = new DocObject(objName);
-                obj.Namespace = ns;
+                obj = new DocObject(type.Name);
+                obj.UnderlyingType = type;
                 ObjectsByQualifiedName[qualifiedName] = obj;
+
+                if (!Namespaces.TryGetValue(ns, out List<DocObject> nsList))
+                {
+                    nsList = new List<DocObject>();
+                    Namespaces.Add(ns, nsList);
+                }
+
                 nsList.Add(obj);
             }
 
+            return obj;
+        }
+
+        public DocObject GetObject(string ns, string objName)
+        {
+            string qualifiedName = $"{ns}.{objName}";
+            ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj);
             return obj;
         }
     }

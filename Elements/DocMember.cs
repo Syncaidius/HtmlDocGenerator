@@ -11,9 +11,10 @@ namespace HtmlDocGenerator
     {
         public MemberInfo BaseInfo { get; protected set; }
 
-        public DocMember(MemberInfo info) : 
+        public DocMember(DocObject parent, MemberInfo info) : 
             base(info.Name)
         {
+            Parent = parent;
             BaseInfo = info;
         }
 
@@ -28,5 +29,9 @@ namespace HtmlDocGenerator
         }
 
         public MemberTypes Type => BaseInfo.MemberType;
+
+        public DocObject Parent { get; }
+
+        public override string Namespace => Parent.Namespace;
     }
 }
