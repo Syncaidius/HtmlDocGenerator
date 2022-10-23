@@ -44,26 +44,19 @@ namespace HtmlDocGenerator
             foreach (string ns in context.Namespaces.Keys)
             {
                 // Filter any non-public types that were documented in the XML source)
-                context.Namespaces[ns] = context.Namespaces[ns].Where(x => x.UnderlyingType != null).ToList();
+                //context.Namespaces[ns] = context.Namespaces[ns].Where(x => x.UnderlyingType != null).ToList();
 
-                List<DocObject> objList = context.Namespaces[ns];
+                DocNamespace dnSpace = context.Namespaces[ns];
                 string nsPath = context.GetFileName(ns);
-                string nsDestPath = $"{destPath}{nsPath}";
-                nsDestPath = Path.GetFullPath(nsDestPath);
 
-                if (!Directory.Exists(nsDestPath))
-                    Directory.CreateDirectory(nsDestPath);
+                if (!dnSpace.DestDirectory.Exists)
+                    dnSpace.DestDirectory.Create();
 
-                foreach (DocObject obj in objList)
-                {
-                    string objEscaped = context.GetFileName(obj.Name);
-                    obj.PageUrl = $"{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
-
-                    GenerateObjectPage(context, $"{nsDestPath}\\{objEscaped}.html", ns, obj);
-                }
+                foreach (DocObject obj in dnSpace.Objects)
+                    GenerateObjectPage(context, obj.PageFilePath, ns, obj);
             }
 
-            string indexHtml = BuildIndexTree(context, context.Namespaces);
+            string indexHtml = BuildIndexTree(context);
             string html = context.Template.IndexHtml.Replace("[BUILD-INDEX]", indexHtml);
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
@@ -94,23 +87,21 @@ namespace HtmlDocGenerator
             }
         }
 
-        private string BuildIndexTree(HtmlContext context, Dictionary<string, List<DocObject>> namespaceList)
+        private string BuildIndexTree(HtmlContext context)
         {
             // Output namespaces
             string html = $"<p>{context.Index.Intro}</p>";
-            List<string> nsList = namespaceList.Keys.ToList();
+            List<string> nsList = context.Namespaces.Keys.ToList();
             nsList.Sort();
 
-            foreach (string ns in nsList)
+            foreach (DocNamespace ns in context.Namespaces.Values)
             {
-                List<DocObject> objList = namespaceList[ns];
-
-                html += GenerateTreeBranch(context, ns, ns, () =>
+                html += GenerateTreeBranch(context, ns.Name, ns.Name, () =>
                 {
-                    string innerHtml = GenerateObjectIndex(context, ns, "Classes", objList, DocObjectType.Class);
-                    innerHtml += GenerateObjectIndex(context, ns, "Structs", objList, DocObjectType.Struct);
-                    innerHtml += GenerateObjectIndex(context, ns, "Interfaces", objList, DocObjectType.Interface);
-                    innerHtml += GenerateObjectIndex(context, ns, "Enums", objList, DocObjectType.Enum);
+                    string innerHtml = GenerateObjectIndex(context, "Classes", ns, DocObjectType.Class);
+                    innerHtml += GenerateObjectIndex(context, "Structs", ns, DocObjectType.Struct);
+                    innerHtml += GenerateObjectIndex(context, "Interfaces", ns, DocObjectType.Interface);
+                    innerHtml += GenerateObjectIndex(context, "Enums", ns, DocObjectType.Enum);
                     return innerHtml;
                 });
             }
@@ -118,14 +109,14 @@ namespace HtmlDocGenerator
             return html;
         }
 
-        private string GenerateObjectIndex(HtmlContext context, string ns, string title, List<DocObject> objList, DocObjectType objType)
+        private string GenerateObjectIndex(HtmlContext context, string title, DocNamespace ns, DocObjectType objType)
         {
-            List<DocObject> filteredList = objList.Where(o => o.DocType == objType).ToList();
+            List<DocObject> filteredList = ns.Objects.Where(o => o.DocType == objType).ToList();
 
             if (filteredList.Count == 0)
                 return "";
 
-            return GenerateTreeBranch(context, ns, title, () =>
+            return GenerateTreeBranch(context, ns.Name, title, () =>
             {
                 string html = "";
                 foreach (DocObject obj in filteredList)
@@ -139,7 +130,7 @@ namespace HtmlDocGenerator
                         html += $"   <tr id=\"{ns}-{obj.HtmlName}\" class=\"sec-namespace-obj\">{_nl}";
                         string htmlIcon = context.GetIcon(obj);
                         html += $"       <td>{htmlIcon}</td>{_nl}";
-                        html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{obj.HtmlName}</span></td>{_nl}";
+                        html += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.HtmlUrl}\">{obj.HtmlName}</span></td>{_nl}";
                         html += $"    </tr>{_nl}";
                         html += $"</tbody></table>{_nl}";
                     }

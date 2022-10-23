@@ -42,13 +42,12 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             foreach (string def in _context.Definitions)
                 parser.LoadXml(_context, def);
 
-            foreach (DocAssembly da in _context.Assemblies.Values)
-                parser.ParseXml(_context, da);
 
             string destPath = _context.DestinationPath;
-            if(!Path.IsPathFullyQualified(destPath))
+            if (!Path.IsPathFullyQualified(destPath))
                 destPath = Path.GetFullPath(destPath);
 
+            parser.Parse(_context, destPath);
             generator.Generate(_context, $"{destPath}\\", $"{destPath}\\index.html");
         }
 

@@ -91,7 +91,7 @@ namespace HtmlDocGenerator
 
                 contentHtml += $"   <tr id=\"{nsMember}\" class=\"sec-namespace-obj\">{Environment.NewLine}";
                 contentHtml += $"       <td>{htmlIcon}</td>{Environment.NewLine}";
-                contentHtml += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.PageUrl}\">{memberHtml}</span></td>{Environment.NewLine}";
+                contentHtml += $"       <td><span class=\"doc-page-target\" data-url=\"{obj.HtmlUrl}\">{memberHtml}</span></td>{Environment.NewLine}";
                 contentHtml += $"    </tr>{Environment.NewLine}";
 
                 prev = m;

@@ -52,7 +52,7 @@ namespace HtmlDocGenerator
         /// </summary>
         public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
-        public Dictionary<string, List<DocObject>> Namespaces { get; } = new Dictionary<string, List<DocObject>>();
+        public Dictionary<string, DocNamespace> Namespaces { get; } = new Dictionary<string, DocNamespace>();
 
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
 
@@ -243,13 +243,13 @@ namespace HtmlDocGenerator
                 obj.UnderlyingType = type;
                 ObjectsByQualifiedName[qualifiedName] = obj;
 
-                if (!Namespaces.TryGetValue(ns, out List<DocObject> nsList))
+                if (!Namespaces.TryGetValue(ns, out DocNamespace dnSpace))
                 {
-                    nsList = new List<DocObject>();
-                    Namespaces.Add(ns, nsList);
+                    dnSpace = new DocNamespace(ns);
+                    Namespaces.Add(ns, dnSpace);
                 }
 
-                nsList.Add(obj);
+                dnSpace.Objects.Add(obj);
             }
 
             return obj;

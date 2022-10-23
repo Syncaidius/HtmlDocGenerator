@@ -22,7 +22,9 @@ namespace HtmlDocGenerator
         /// <summary>
         /// Gets the Url to the page containing information about the current <see cref="DocElement"/>.
         /// </summary>
-        public string PageUrl { get; set; }
+        public string HtmlUrl { get; set; }
+
+        public string PageFilePath { get; set; }
 
         public string HtmlName { get; private set; }
 

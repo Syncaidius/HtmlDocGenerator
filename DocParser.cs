@@ -96,17 +96,38 @@ namespace HtmlDocGenerator
             }
         }
 
-        public void ParseXml(HtmlContext context, DocAssembly assembly)
+        public void Parse(HtmlContext context, string destPath)
         {
-            XmlNode xMembers = assembly.XmlRoot["members"];
-            if (xMembers != null)
+            // Set page URLs. This needs to be done before parsing XML, as some summaries may reference other objects or members.
+            foreach(string ns in context.Namespaces.Keys)
             {
-                foreach (XmlNode node in xMembers.ChildNodes)
-                {
-                    if (node.Name != "member")
-                        continue;
+                DocNamespace dnSpace = context.Namespaces[ns];
+                string nsPath = context.GetFileName(ns);
+                dnSpace.DestDirectory = new DirectoryInfo($"{destPath}{nsPath}"); 
 
-                    ParseMember(context, node);
+                foreach (DocObject obj in dnSpace.Objects)
+                {
+                    string objEscaped = context.GetFileName(obj.Name);
+                    obj.HtmlUrl = $"../{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
+                    obj.PageFilePath = $"{dnSpace.DestDirectory.FullName}\\{objEscaped}.html";
+
+                    // TODO generate member page paths/URLs
+                }
+            }
+
+            // Parse assembly XML members.
+            foreach (DocAssembly a in context.Assemblies.Values)
+            {
+                XmlNode xMembers = a.XmlRoot["members"];
+                if (xMembers != null)
+                {
+                    foreach (XmlNode node in xMembers.ChildNodes)
+                    {
+                        if (node.Name != "member")
+                            continue;
+
+                        ParseMember(context, node);
+                    }
                 }
             }
         }
@@ -343,7 +364,7 @@ namespace HtmlDocGenerator
                     {
                         DocElement refObj = ParseXmlName(context, attCRef.Value, out XmlMemberType mType, out string mName);
                         if (refObj != null)
-                            summary = $"<a href=\"{refObj.PageUrl}\">{refObj.Name}</a>";
+                            summary = $"<a href=\"{refObj.HtmlUrl}\">{refObj.Name}</a>";
                         else if (mType == XmlMemberType.Invalid)
                             summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
                     }
