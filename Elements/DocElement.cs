@@ -10,6 +10,14 @@ namespace HtmlDocGenerator
 {
     public abstract class DocElement
     {
+        public class NameComparer : IComparer<DocElement>
+        {
+            public int Compare(DocElement x, DocElement y)
+            {
+                return x.Name.CompareTo(y.Name);
+            }
+        }
+
         string _name;
 
         public DocElement(string name)
@@ -18,6 +26,8 @@ namespace HtmlDocGenerator
         }
 
         public string Summary { get; set; } = "&nbsp;";
+
+        public string Remark { get; set; } = "";
 
         /// <summary>
         /// Gets the Url to the page containing information about the current <see cref="DocElement"/>.

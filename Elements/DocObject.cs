@@ -81,8 +81,9 @@ namespace HtmlDocGenerator
                 }
 
                 // Sort member lists
+                NameComparer nameComparer = new NameComparer();
                 foreach (List<DocMember> objList in MembersByType.Values)
-                    objList.OrderBy(o => o.Name);
+                    objList.Sort(nameComparer);
 
                 // Figure out the type of object that is defined.
                 if (_type.IsClass)

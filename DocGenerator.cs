@@ -57,7 +57,9 @@ namespace HtmlDocGenerator
             }
 
             string indexHtml = BuildIndexTree(context);
-            string html = context.Template.IndexHtml.Replace("[BUILD-INDEX]", indexHtml);
+            string html = context.Template.IndexHtml
+                .Replace("[INTRO]", context.Index.Intro)
+                .Replace("[BUILD-INDEX]", indexHtml);
 
             // TODO move JS scripts into /js directory and use config to define which ones to include
 
@@ -90,7 +92,7 @@ namespace HtmlDocGenerator
         private string BuildIndexTree(HtmlContext context)
         {
             // Output namespaces
-            string html = $"<p>{context.Index.Intro}</p>";
+            string html = "";
             List<string> nsList = context.Namespaces.Keys.ToList();
             nsList.Sort();
 
@@ -142,14 +144,17 @@ namespace HtmlDocGenerator
                             string innerHtml = "";
                             foreach (ObjectSectionGenerator secGen in _objSectionGens)
                             {
-                                string secHtml = secGen.GenerateIndexTreeItems(context, nsObj, obj);
-
-                                if (secHtml.Length > 0)
+                                if (secGen is ObjectMemberSectionGenerator memSecGen)
                                 {
-                                    string secTitle = secGen.GetTitle();
-                                    string nsSec = $"{nsObj}{secTitle}";
+                                    string secHtml = memSecGen.GenerateIndexTreeItems(context, nsObj, obj);
 
-                                    innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
+                                    if (secHtml.Length > 0)
+                                    {
+                                        string secTitle = secGen.GetTitle();
+                                        string nsSec = $"{nsObj}{secTitle}";
+
+                                        innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
+                                    }
                                 }
                             }
 
@@ -198,9 +203,7 @@ namespace HtmlDocGenerator
             using (FileStream stream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
             {
                 using (StreamWriter writer = new StreamWriter(stream))
-                {
                     writer.Write(html);
-                }
             }
 
             context.Log($"Created page for {ns}.{obj.Name}: {destPath}");

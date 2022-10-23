@@ -8,10 +8,15 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
+    public abstract class ObjectMemberSectionGenerator : ObjectSectionGenerator
+    {
+        public abstract string GenerateIndexTreeItems(HtmlContext config, string ns, DocObject obj);
+    }
+
     /// <summary>
     /// Base class for generators which output html for a member-list section of an object page.
     /// </summary>
-    public abstract class ObjectMemberSectionGenerator<T> : ObjectSectionGenerator
+    public abstract class ObjectMemberSectionGenerator<T> : ObjectMemberSectionGenerator
         where T : MemberInfo
     {
         protected override string OnGenerate(HtmlContext config, string ns, DocObject obj)
@@ -23,8 +28,6 @@ namespace HtmlDocGenerator
             if (members.Count == 0)
                 return "";
 
-            string contentHtml = "";
-
             foreach (DocMember dm in members)
             {
                 T member = dm.BaseInfo as T;
@@ -34,23 +37,11 @@ namespace HtmlDocGenerator
 
                 string iconHtml = config.GetIcon(member, "../");
 
-                Html(ref contentHtml, "<tr>");
-                Html(ref contentHtml, $"   <td>{iconHtml}</td>");
-                Html(ref contentHtml, $"   <td>{memHtml}</td>");
-
-                Html(ref contentHtml, $"<td>{dm.Summary}</td>");
-                Html(ref contentHtml, $"</tr>");
-            }
-
-            if (contentHtml.Length > 0)
-            {
-                Html(ref html, "<table><thead><tr>");
-                Html(ref html, $"   <th class=\"obj-section-icon\">&nbsp;</th>");
-                Html(ref html, $"   <th class=\"obj-section-title\">{GetTitle()}</th>");
-                Html(ref html, $"   <th class=\"obj-section-desc\">&nbsp</th>");
-                Html(ref html, "</tr></thead><tbody>");
-                Html(ref html, contentHtml);
-                Html(ref html, "</tbody></table><br/>");
+                Html(ref html, "<tr>");
+                Html(ref html, $"   <td>{iconHtml}</td>");
+                Html(ref html, $"   <td>{memHtml}</td>");
+                Html(ref html, $"   <td>{dm.Summary}</td>");
+                Html(ref html, $"</tr>");
             }
 
             return html;

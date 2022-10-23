@@ -14,9 +14,20 @@ namespace HtmlDocGenerator
         public string Generate(HtmlContext config, string ns, DocObject obj)
         {
             string html = "";
-            Html(ref html, "<div class=\"obj-section\">");
-            Html(ref html, OnGenerate(config, ns, obj));
-            Html(ref html, "</div>");
+            string contentHtml = OnGenerate(config, ns, obj);
+
+            if (!string.IsNullOrWhiteSpace(contentHtml))
+            {
+                Html(ref html, "<div class=\"obj-section\">");
+                Html(ref html, "    <table><thead><tr>");
+                Html(ref html, $"       <th class=\"obj-section-icon\">&nbsp;</th>");
+                Html(ref html, $"       <th class=\"obj-section-title\">{GetTitle()}</th>");
+                Html(ref html, $"       <th class=\"obj-section-desc\">&nbsp</th>");
+                Html(ref html, "    </tr></thead><tbody>");
+                Html(ref html, contentHtml);
+                Html(ref html, "    </tbody></table><br/>");
+                Html(ref html, "</div>");
+            }
 
             return html;
         }
@@ -25,6 +36,5 @@ namespace HtmlDocGenerator
 
         protected abstract string OnGenerate(HtmlContext config, string ns, DocObject obj);
 
-        public abstract string GenerateIndexTreeItems(HtmlContext config, string ns, DocObject obj);
     }
 }

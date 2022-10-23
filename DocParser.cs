@@ -25,6 +25,7 @@ namespace HtmlDocGenerator
             ['!'] = XmlMemberType.Invalid
         };
 
+
         /// <summary>
         /// Parses a summary xml file and adds it's information to the provided <see cref="HtmlContext"/>.
         /// </summary>
@@ -98,18 +99,22 @@ namespace HtmlDocGenerator
 
         public void Parse(HtmlContext context, string destPath)
         {
+            DocElement.NameComparer nameComparer = new DocElement.NameComparer();
+
             // Set page URLs. This needs to be done before parsing XML, as some summaries may reference other objects or members.
-            foreach(string ns in context.Namespaces.Keys)
+            foreach (string ns in context.Namespaces.Keys)
             {
                 DocNamespace dnSpace = context.Namespaces[ns];
                 string nsPath = context.GetFileName(ns);
-                dnSpace.DestDirectory = new DirectoryInfo($"{destPath}{nsPath}"); 
+                dnSpace.DestDirectory = new DirectoryInfo($"{destPath}{nsPath}");
+                dnSpace.Objects.Sort(nameComparer);
 
                 foreach (DocObject obj in dnSpace.Objects)
                 {
                     string objEscaped = context.GetFileName(obj.Name);
                     obj.HtmlUrl = $"{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
                     obj.PageFilePath = $"{dnSpace.DestDirectory.FullName}\\{objEscaped}.html";
+
 
                     // TODO generate member page paths/URLs
                 }
@@ -151,6 +156,10 @@ namespace HtmlDocGenerator
                     {
                         case "summary":
                             el.Summary = ParseSummary(context, sumNode.InnerXml);
+                            break;
+
+                        case "remarks":
+                            el.Remark = ParseSummary(context, sumNode.InnerXml);
                             break;
 
                         case "param":
@@ -326,7 +335,7 @@ namespace HtmlDocGenerator
                                 int len = (i - nodeStart) + 1;
                                 string nXml = xmlText.Substring(nodeStart, len);
                                 string nText = ParseSummaryXml(context, nXml, xmlDoc);
-                                xmlText = xmlText.Replace(nXml, nText);
+                                xmlText = xmlText.Remove(nodeStart, len).Insert(nodeStart, nText);
 
                                 
                                 summary += nText;
@@ -369,6 +378,10 @@ namespace HtmlDocGenerator
                         else if (mType == XmlMemberType.Invalid)
                             summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
                     }
+                    break;
+
+                case "para":
+                    summary = "<br/><br/>";
                     break;
             }
 
