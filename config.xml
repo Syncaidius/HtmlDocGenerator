@@ -8,13 +8,14 @@
 	</template>
 
 	<icons>
+		<constructor>img/constructor.png</constructor>
 		<class>img/class.png</class>
 		<struct>img/struct.png</struct>
 		<enum></enum>
-		<interface></interface>
-		<method></method>
-		<property></property>
-		<field></field>
+		<interface>img/interface.png</interface>
+		<method>img/method.png</method>
+		<property>img/property.png</property>
+		<field>img/field.png</field>
 		<event>img/event.png</event>
 	</icons>
 

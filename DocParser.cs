@@ -108,7 +108,7 @@ namespace HtmlDocGenerator
                 foreach (DocObject obj in dnSpace.Objects)
                 {
                     string objEscaped = context.GetFileName(obj.Name);
-                    obj.HtmlUrl = $"../{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
+                    obj.HtmlUrl = $"{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
                     obj.PageFilePath = $"{dnSpace.DestDirectory.FullName}\\{objEscaped}.html";
 
                     // TODO generate member page paths/URLs
@@ -276,6 +276,7 @@ namespace HtmlDocGenerator
 
         private string ParseSummary(HtmlContext context, string xmlText, XmlDocument xmlDoc = null)
         {
+            xmlText = xmlText.Trim();
             xmlDoc = xmlDoc ?? new XmlDocument();
             int nodeStart = 0;
 
@@ -364,7 +365,7 @@ namespace HtmlDocGenerator
                     {
                         DocElement refObj = ParseXmlName(context, attCRef.Value, out XmlMemberType mType, out string mName);
                         if (refObj != null)
-                            summary = $"<a href=\"{refObj.HtmlUrl}\">{refObj.Name}</a>";
+                            summary = $"<a href=\"../{refObj.HtmlUrl}\">{refObj.Name}</a>";
                         else if (mType == XmlMemberType.Invalid)
                             summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
                     }
