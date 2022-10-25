@@ -61,6 +61,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             DocData dd = new DocData()
             {
                 Title = "Molten Engine Documentation",
+                Intro = _context.Index.Intro,
                 Namespaces = _context.Namespaces
             };
 

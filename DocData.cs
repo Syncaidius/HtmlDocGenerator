@@ -12,6 +12,8 @@ namespace HtmlDocGenerator
     {
         public string Title { get; set; }
 
+        public string Intro { get; set; }
+
         public Dictionary<string, DocNamespace> Namespaces { get; set; }
     }
 }
