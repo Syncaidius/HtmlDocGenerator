@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,7 @@ using System.Xml.XPath;
 
 namespace HtmlDocGenerator
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class HtmlContext
     {
         public class IndexConfig
@@ -52,6 +54,7 @@ namespace HtmlDocGenerator
         /// </summary>
         public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
+        [JsonProperty]
         public Dictionary<string, DocNamespace> Namespaces { get; } = new Dictionary<string, DocNamespace>();
 
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
@@ -59,6 +62,8 @@ namespace HtmlDocGenerator
         public IndexConfig Index { get; } = new IndexConfig();
 
         public SummaryConfig Summary { get; } = new SummaryConfig();
+
+        public DirectoryInfo SourceDirectory { get; set; }
 
         public static HtmlContext Load(string path)
         {
@@ -85,10 +90,20 @@ namespace HtmlDocGenerator
                 XmlNode summary = cfg["summary"];
                 XmlNode icons = cfg["icons"];
                 XmlNode intro = cfg["intro"];
+                XmlNode source = cfg["source"];
 
 
                 if (dest != null)
                     cxt.DestinationPath = dest.InnerText;
+
+                if (source != null)
+                {
+                    string dir = source.InnerText;
+                    if (!Path.IsPathFullyQualified(dir))
+                        dir = Path.GetFullPath(dir);
+
+                    cxt.SourceDirectory = new DirectoryInfo(dir);
+                }
 
                 if (template != null)
                 {

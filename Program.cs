@@ -1,4 +1,6 @@
 ﻿using HtmlDocGenerator;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.IO;
 using System.Net.Mail;
@@ -48,7 +50,41 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
                 destPath = Path.GetFullPath(destPath);
 
             parser.Parse(_context, destPath);
-            generator.Generate(_context, $"{destPath}\\", $"{destPath}\\index.html");
+            //generator.Generate(_context, $"{destPath}\\", $"{destPath}\\index.html");
+
+            JsonSerializerSettings settings = new JsonSerializerSettings()
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+            };
+            settings.Converters.Add(new StringEnumConverter());
+
+            DocData dd = new DocData()
+            {
+                Title = "Molten Engine Documentation",
+                Namespaces = _context.Namespaces
+            };
+
+            string json = JsonConvert.SerializeObject(dd, Formatting.Indented, settings);
+            json = $"var docData = {json};";
+
+            using (FileStream stream = new FileStream($"{destPath}\\js\\data.js", FileMode.Create, FileAccess.Write))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                    writer.Write(json);
+            }
+
+            // Copy source files to destination directory.
+            FileInfo[] srcFiles = _context.SourceDirectory.GetFiles("*.*", SearchOption.AllDirectories);
+            foreach(FileInfo srcInfo in srcFiles)
+            {
+                string relative = Path.GetRelativePath(_context.SourceDirectory.FullName, srcInfo.FullName);
+                FileInfo destInfo = new FileInfo($"{destPath}{relative}");
+
+                if (!destInfo.Directory.Exists)
+                    destInfo.Directory.Create();
+
+                File.Copy(srcInfo.FullName, destInfo.FullName, true);
+            }
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

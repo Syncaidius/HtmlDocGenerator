@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Xml.Linq;
 
 namespace HtmlDocGenerator
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class DocElement
     {
         public class NameComparer : IComparer<DocElement>
@@ -25,9 +27,11 @@ namespace HtmlDocGenerator
             Name = name;
         }
 
-        public string Summary { get; set; } = "&nbsp;";
+        [JsonProperty]
+        public string Summary { get; set; }
 
-        public string Remark { get; set; } = "";
+        [JsonProperty]
+        public string Remark { get; set; }
 
         /// <summary>
         /// Gets the Url to the page containing information about the current <see cref="DocElement"/>.
@@ -40,6 +44,7 @@ namespace HtmlDocGenerator
 
         public abstract string Namespace { get; }
 
+        [JsonProperty]
         public string Name
         {
             get => _name;

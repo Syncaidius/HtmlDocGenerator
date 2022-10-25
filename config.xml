@@ -1,27 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
 	<destination>docs\</destination>
-	
-	<template>
-		<index>template.html</index>
-		<object>template_obj.html</object>
-	</template>
 
-	<icons>
-		<constructor>img/constructor.png</constructor>
-		<class>img/class.png</class>
-		<struct>img/struct.png</struct>
-		<enum></enum>
-		<interface>img/interface.png</interface>
-		<method>img/method.png</method>
-		<property>img/property.png</property>
-		<field>img/field.png</field>
-		<event>img/event.png</event>
-	</icons>
-
-	<scripts>
-		<script>docs/js/index.js</script>
-	</scripts>
+	<title>Molten Engine</title>
+	<source>Source\</source>
 
 	<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
 

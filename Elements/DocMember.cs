@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class DocMember : DocElement
     {
         public MemberInfo BaseInfo { get; protected set; }
@@ -28,6 +30,7 @@ namespace HtmlDocGenerator
             return $"{BaseInfo.Name} - Type: {Type}";
         }
 
+        [JsonProperty]
         public MemberTypes Type => BaseInfo.MemberType;
 
         public DocObject Parent { get; }
