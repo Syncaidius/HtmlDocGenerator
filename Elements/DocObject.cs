@@ -111,9 +111,9 @@ namespace HtmlDocGenerator
             return $"{Name} - {XmlType} - Members: {MembersByName.Count}";
         }
 
-        [JsonProperty]
         public Dictionary<string, List<DocMember>> MembersByName { get; } = new Dictionary<string, List<DocMember>>();
-
+        
+        [JsonProperty]
         public Dictionary<MemberTypes, List<DocMember>> MembersByType { get; } = new Dictionary<MemberTypes, List<DocMember>>();
 
         [JsonProperty]

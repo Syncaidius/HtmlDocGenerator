@@ -30,7 +30,6 @@ namespace HtmlDocGenerator
             return $"{BaseInfo.Name} - Type: {Type}";
         }
 
-        [JsonProperty]
         public MemberTypes Type => BaseInfo.MemberType;
 
         public DocObject Parent { get; }

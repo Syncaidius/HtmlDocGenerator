@@ -10,6 +10,7 @@ namespace HtmlDocGenerator
     [JsonObject(MemberSerialization.OptIn)]
     public class DocNamespace
     {
+        [JsonProperty]
         public string Name { get;}
 
         [JsonProperty]
