@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace HtmlDocGenerator
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class DocMethodMember : DocMember
     {
         public DocMethodMember(DocObject parent, MethodBase info) : base(parent, info)
@@ -60,6 +62,7 @@ namespace HtmlDocGenerator
             return match;
         }
 
+        [JsonProperty]
         public List<DocParameter> Parameters { get; } = new List<DocParameter>();
 
         public Dictionary<string, DocParameter> ParametersByName { get; } = new Dictionary<string, DocParameter>();

@@ -15,14 +15,14 @@ namespace HtmlDocGenerator
 {
     public class DocParser
     {
-        Dictionary<char, XmlMemberType> _typeKeys = new Dictionary<char, XmlMemberType>()
+        Dictionary<char, DocObjectType> _typeKeys = new Dictionary<char, DocObjectType>()
         {
-            ['T'] = XmlMemberType.ObjectType,
-            ['E'] = XmlMemberType.Event,
-            ['P'] = XmlMemberType.Property,
-            ['F'] = XmlMemberType.Field,
-            ['M'] = XmlMemberType.Method,
-            ['!'] = XmlMemberType.Invalid
+            ['T'] = DocObjectType.ObjectType,
+            ['E'] = DocObjectType.Event,
+            ['P'] = DocObjectType.Property,
+            ['F'] = DocObjectType.Field,
+            ['M'] = DocObjectType.Method,
+            ['!'] = DocObjectType.Invalid
         };
 
 
@@ -146,7 +146,7 @@ namespace HtmlDocGenerator
                 return;
             }
 
-            DocElement el = ParseXmlName(context, attName.Value, out XmlMemberType mType, out string mName);
+            DocElement el = ParseXmlName(context, attName.Value, out DocObjectType mType, out string mName);
 
             if (el != null)
             {
@@ -178,13 +178,13 @@ namespace HtmlDocGenerator
             }
         }
 
-        private DocElement ParseXmlName(HtmlContext context, string typeName, out XmlMemberType mType, out string name)
+        private DocElement ParseXmlName(HtmlContext context, string typeName, out DocObjectType mType, out string name)
         {
             typeName = typeName.Replace("&lt;", "<").Replace("&gt;", ">");
             string ns = "";
             string nsPrev = "";
 
-            mType = XmlMemberType.None;
+            mType = DocObjectType.Unknown;
             name = "";
             char startsWith = typeName[0];
             if (!_typeKeys.TryGetValue(startsWith, out mType))
@@ -195,7 +195,7 @@ namespace HtmlDocGenerator
 
             typeName = typeName.Substring(2); // Get typeName without the [type]: prefix
 
-            if (mType == XmlMemberType.Invalid)
+            if (mType == DocObjectType.Invalid)
             {
                 context.Error($"Invalid type '{typeName}' detected. Cannot parse XML name. Starts with '{startsWith}' operator");
                 name = typeName;
@@ -264,7 +264,7 @@ namespace HtmlDocGenerator
                 memberName = cur;
 
             DocElement el = null;
-            if (mType != XmlMemberType.ObjectType)
+            if (mType != DocObjectType.ObjectType)
             {
                 if (objectName.Length == 0)
                     objectName = prev;
@@ -372,10 +372,10 @@ namespace HtmlDocGenerator
                     XmlAttribute attCRef = subNode.Attributes["cref"];
                     if (attCRef != null)
                     {
-                        DocElement refObj = ParseXmlName(context, attCRef.Value, out XmlMemberType mType, out string mName);
+                        DocElement refObj = ParseXmlName(context, attCRef.Value, out DocObjectType mType, out string mName);
                         if (refObj != null)
                             summary = $"<a href=\"../{refObj.HtmlUrl}\">{refObj.Name}</a>";
-                        else if (mType == XmlMemberType.Invalid)
+                        else if (mType == DocObjectType.Invalid)
                             summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
                     }
                     break;

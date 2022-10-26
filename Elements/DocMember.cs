@@ -18,6 +18,7 @@ namespace HtmlDocGenerator
         {
             Parent = parent;
             BaseInfo = info;
+            DeclaringType = BaseInfo.DeclaringType.FullName; // TODO parse name incase it's generic.
         }
 
         public virtual bool IsMatch(DocObject obj, string name, Type[] parameters = null, Type[] genericParameters = null)
@@ -30,7 +31,11 @@ namespace HtmlDocGenerator
             return $"{BaseInfo.Name} - Type: {Type}";
         }
 
+        [JsonProperty]
         public MemberTypes Type => BaseInfo.MemberType;
+
+        [JsonProperty]
+        public string DeclaringType { get; }
 
         public DocObject Parent { get; }
 

@@ -66,20 +66,7 @@ namespace HtmlDocGenerator
                     if (dm == null)
                         continue;
 
-                    if(!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
-                    {
-                        memList = new List<DocMember>();
-                        MembersByName.Add(member.Name, memList);
-                    }
-
-                    if (!MembersByType.TryGetValue(member.MemberType, out List<DocMember> byTypeList))
-                    {
-                        byTypeList = new List<DocMember>();
-                        MembersByType.Add(member.MemberType, byTypeList);
-                    }
-
-                    memList.Add(dm);
-                    byTypeList.Add(dm);
+                    AddMember(dm);
                 }
 
                 // Sort member lists
@@ -106,18 +93,33 @@ namespace HtmlDocGenerator
             }
         }
 
+        private void AddMember(DocMember member)
+        {
+            if (!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
+            {
+                memList = new List<DocMember>();
+                MembersByName.Add(member.Name, memList);
+            }
+
+            if (!MembersByType.TryGetValue(member.BaseInfo.MemberType, out List<DocMember> byTypeList))
+            {
+                byTypeList = new List<DocMember>();
+                MembersByType.Add(member.BaseInfo.MemberType, byTypeList);
+            }
+
+            memList.Add(member);
+            byTypeList.Add(member);
+        }
+
         public override string ToString()
         {
-            return $"{Name} - {XmlType} - Members: {MembersByName.Count}";
+            return $"{Name} - {DocType} - Members: {MembersByName.Count}";
         }
 
         public Dictionary<string, List<DocMember>> MembersByName { get; } = new Dictionary<string, List<DocMember>>();
         
         [JsonProperty]
         public Dictionary<MemberTypes, List<DocMember>> MembersByType { get; } = new Dictionary<MemberTypes, List<DocMember>>();
-
-        [JsonProperty]
-        public XmlMemberType XmlType { get; set; }
 
         [JsonProperty]
         public DocObjectType DocType { get; set; }

@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 namespace HtmlDocGenerator
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DocNamespace
+    public class DocNamespace : DocElement
     {
-        [JsonProperty]
-        public string Name { get;}
-
         [JsonProperty]
         public List<DocObject> Objects { get; } = new List<DocObject>();
 
         public DirectoryInfo DestDirectory { get; set; }
 
-        public DocNamespace(string name)
+        public override string Namespace => Name;
+
+        public DocNamespace(string name) : base(name)
         {
             Name = name;
         }

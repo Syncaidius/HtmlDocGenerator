@@ -45,6 +45,9 @@ namespace HtmlDocGenerator
         public abstract string Namespace { get; }
 
         [JsonProperty]
+        public Dictionary<string, List<DocElement>> Members { get; set; } = new Dictionary<string, List<DocElement>>();
+
+        [JsonProperty]
         public string Name
         {
             get => _name;

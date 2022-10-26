@@ -8,24 +8,29 @@ function populateIndex() {
     keys = keys.sort();
 
     keys.forEach((ns, index) => {
-        let branchHtml = populateIndexBranch(ns, ns, () => {
+        let branchHtml = populateIndexBranch(ns, ns, 0, () => {
             let cHtml = "";
             for (let i = 0; i < objTypes.length; i++) { 
                 let oType = objTypes[i];
                 cHtml += generateObjectIndex(oType, docData.Namespaces[ns], oType, oType);
             }
 
+            return cHtml;
         });
         di.append(branchHtml);
     });
 }
 
-function getIcon(el) {
-    return `${el.DocType.toLowerCase()}.png`;
+function toHtml(str) {
+    return str.replace('<', '&lt;').replace('>', '&gt;');
 }
 
-function populateIndexBranch(namespace, title, contentCallback, depth = 0) {
-    let html = `<div id="${namespace}${title}" class="sec-namespace sec-namespace${(depth > 0 ? " - noleft" : "")}">`;
+function getIcon(el) {
+    return `<img src="img/${el.DocType.toLowerCase()}.png"/>`;
+}
+
+function populateIndexBranch(namespace, title, depth, contentCallback) {
+    let html = `<div id="${namespace}${title}" class="sec-namespace sec-namespace${(depth > 0 ? `-noleft` : ``)}">`;
     html += `       <span class="namespace-toggle\">${title}</span><br/>`;
     html += `   <div class="sec-namespace-inner">`;
 
@@ -42,45 +47,50 @@ function generateObjectIndex(title, ns, title, objType) {
     if (filteredList.length == 0)
         return "";
 
-    return populateIndexBranch(ns.Name, title, () => {
+    return populateIndexBranch(ns, title, 1, () => {
         let html = "";
         for (let obj of filteredList) {
             let htmlIcon = getIcon(obj);
+            let htmlName = toHtml(obj.Name);
 
             if (obj.MembersByType.length == 0 || obj.DocType == "Enum") {
                 html += `<table class="sec-obj-index"><thead><tr>
                             <th class="col-type-icon"></th>
                             <th class="col-type-name"></th>
                             </tr></thead><tbody>
-                            <tr id="{ns}-{obj.HtmlName}" class="sec-namespace-obj">
+                            <tr id="${ns}-${htmlName}" class="sec-namespace-obj">
                                 <td>${htmlIcon}</td>
-                                <td><span class=\"doc-page-target\" data-url=\"{obj.HtmlUrl}\">{obj.HtmlName}</span></td>
+                                <td><span class="doc-page-target" data-url="${obj.Name}">${htmlName}</span></td>
                             </tr>
-                        </tbody></table>`;
+                        </tbody></table>\n`;
             }
             else {
-                let nsObj = `${ns}${title}`;
-                html += populateIndexBranch( nsObj, obj.HtmlName, () => {
+                //let nsObj = `${ns}${title}`;
+                html += populateIndexBranch(ns, obj.HtmlName, 2, () => {
                     let innerHtml = "";
                     // TODO replace with JS section generators
-                    /*for(let secGen in _objSectionGens)
-                    {
+
+                    /*for (let secGen in _objSectionGens) {
                         if (secGen is ObjectMemberSectionGenerator memSecGen)
-                {
-                                    string secHtml = memSecGen.GenerateIndexTreeItems(context, nsObj, obj);
-
-                    if (secHtml.Length > 0) {
-                                        string secTitle = secGen.GetTitle();
-                                        string nsSec = $"{nsObj}{secTitle}";
-
-                        innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
+                        {
+                            let secHtml = memSecGen.GenerateIndexTreeItems(context, nsObj, obj);
+    
+                            if (secHtml.Length > 0) {
+                                let secTitle = secGen.GetTitle();
+                                let nsSec = $"{nsObj}{secTitle}";
+    
+                                innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
+                            }
+                        }
                     }*/
+
+                    return innerHtml;
                 });
             }
         }
 
         return html;
-    }, 2);
+    });
 }
 
 $(document).ready(function () {
@@ -107,8 +117,8 @@ $(document).ready(function () {
         {
             pageTargets[i].addEventListener("click", function (e) {
                 {
-                    document.getElementById('content-target').src = e.target.dataset.url
-
+                    //document.getElementById('content-target').src = e.target.dataset.url
+                    // TODO set main content to use whichever loader we need (object or member).
                 }
             });
         }

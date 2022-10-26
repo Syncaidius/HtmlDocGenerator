@@ -10,12 +10,24 @@ namespace HtmlDocGenerator
     {
         Unknown = 0,
 
-        Class = 1,
+        ObjectType = 1,
 
-        Struct = 2,
+        Class = 2,
 
-        Enum = 3,
+        Struct = 3,
 
-        Interface = 4,
+        Enum = 4,
+
+        Interface = 5,
+
+        Event = 6,
+
+        Field = 7,
+
+        Property = 8,
+
+        Method = 9,
+
+        Invalid = 10,
     }
 }
