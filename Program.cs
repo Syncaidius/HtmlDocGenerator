@@ -28,7 +28,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
 
         private static void Run(string[] args)
         {
-            _context = HtmlContext.Load("config.xml");
+            _context = HtmlContext.Load("Molten Engine Documentation", "config.xml");
             if (_context == null)
                 return;
 
@@ -56,16 +56,10 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             {
                 NullValueHandling = NullValueHandling.Ignore,
             };
+
             settings.Converters.Add(new StringEnumConverter());
 
-            DocData dd = new DocData()
-            {
-                Title = "Molten Engine Documentation",
-                Intro = _context.Index.Intro,
-                Namespaces = _context.Namespaces
-            };
-
-            string json = JsonConvert.SerializeObject(dd, Formatting.Indented, settings);
+            string json = JsonConvert.SerializeObject(_context, Formatting.Indented, settings);
             json = $"var docData = {json};";
 
             using (FileStream stream = new FileStream($"{destPath}\\js\\data.js", FileMode.Create, FileAccess.Write))

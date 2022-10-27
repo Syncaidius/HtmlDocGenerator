@@ -14,11 +14,20 @@ namespace HtmlDocGenerator
         public MemberInfo BaseInfo { get; protected set; }
 
         public DocMember(DocObject parent, MemberInfo info) : 
-            base(info.Name)
+            base(info.Name, DocObjectType.Unknown)
         {
             Parent = parent;
             BaseInfo = info;
             DeclaringType = BaseInfo.DeclaringType.FullName; // TODO parse name incase it's generic.
+
+            switch (BaseInfo.MemberType)
+            {
+                case MemberTypes.Property: ObjectType = DocObjectType.Property; break;
+                case MemberTypes.Field: ObjectType = DocObjectType.Field; break;
+                case MemberTypes.Method: ObjectType = DocObjectType.Method; break;
+                case MemberTypes.Constructor: ObjectType = DocObjectType.Constructor;break;
+                case MemberTypes.Event: ObjectType = DocObjectType.Event; break;
+            }
         }
 
         public virtual bool IsMatch(DocObject obj, string name, Type[] parameters = null, Type[] genericParameters = null)
@@ -28,11 +37,8 @@ namespace HtmlDocGenerator
 
         public override string ToString()
         {
-            return $"{BaseInfo.Name} - Type: {Type}";
+            return $"{BaseInfo.Name} - Type: {BaseInfo.MemberType}";
         }
-
-        [JsonProperty]
-        public MemberTypes Type => BaseInfo.MemberType;
 
         [JsonProperty]
         public string DeclaringType { get; }

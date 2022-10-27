@@ -29,5 +29,13 @@ namespace HtmlDocGenerator
         Method = 9,
 
         Invalid = 10,
+
+        Namespace = 11,
+
+        Constructor = 12,
+
+        Parameter = 13,
+
+        TypeParameter = 14,
     }
 }

@@ -12,7 +12,7 @@ namespace HtmlDocGenerator
     [JsonObject(MemberSerialization.OptIn)]
     public class DocParameter : DocElement
     {
-        public DocParameter(ParameterInfo info) : base(info.Name)
+        public DocParameter(ParameterInfo info) : base(info.Name, DocObjectType.Parameter)
         {
             Info = info;
         }

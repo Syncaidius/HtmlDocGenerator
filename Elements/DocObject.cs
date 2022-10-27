@@ -13,7 +13,7 @@ namespace HtmlDocGenerator
     {
         Type _type;
 
-        public DocObject(string name) : base(name)
+        public DocObject(string name) : base(name, DocObjectType.ObjectType)
         {
             MembersByType = new Dictionary<MemberTypes, List<DocMember>>();
         }
@@ -118,7 +118,6 @@ namespace HtmlDocGenerator
 
         public Dictionary<string, List<DocMember>> MembersByName { get; } = new Dictionary<string, List<DocMember>>();
         
-        [JsonProperty]
         public Dictionary<MemberTypes, List<DocMember>> MembersByType { get; } = new Dictionary<MemberTypes, List<DocMember>>();
 
         [JsonProperty]

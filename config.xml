@@ -6,11 +6,6 @@
 	<source>Source\</source>
 
 	<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
-
-	<sumamry>
-		<maxlength>300</maxlength>
-		<readmore>Read More</readmore>
-	</sumamry>
 	
 	<definitions>
 		<def>src\Molten.Engine.xml</def>

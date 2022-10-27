@@ -99,7 +99,7 @@ namespace HtmlDocGenerator
 
         public void Parse(HtmlContext context, string destPath)
         {
-            DocElement.NameComparer nameComparer = new DocElement.NameComparer();
+            /*DocElement.NameComparer nameComparer = new DocElement.NameComparer();
 
             // Set page URLs. This needs to be done before parsing XML, as some summaries may reference other objects or members.
             foreach (string ns in context.Namespaces.Keys)
@@ -118,7 +118,7 @@ namespace HtmlDocGenerator
 
                     // TODO generate member page paths/URLs
                 }
-            }
+            }*/
 
             // Parse assembly XML members.
             foreach (DocAssembly a in context.Assemblies.Values)

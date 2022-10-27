@@ -10,14 +10,9 @@ namespace HtmlDocGenerator
     [JsonObject(MemberSerialization.OptIn)]
     public class DocNamespace : DocElement
     {
-        [JsonProperty]
-        public List<DocObject> Objects { get; } = new List<DocObject>();
-
-        public DirectoryInfo DestDirectory { get; set; }
-
         public override string Namespace => Name;
 
-        public DocNamespace(string name) : base(name)
+        public DocNamespace(string name) : base(name, DocObjectType.Namespace)
         {
             Name = name;
         }

@@ -11,8 +11,13 @@ using System.Xml.XPath;
 namespace HtmlDocGenerator
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class HtmlContext
+    public class HtmlContext : DocElement
     {
+        public HtmlContext(string name) : base(name, DocObjectType.Namespace)
+        {
+
+        }
+
         public class IndexConfig
         {
             public string Intro { get; set; }
@@ -54,20 +59,17 @@ namespace HtmlDocGenerator
         /// </summary>
         public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
-        [JsonProperty]
-        public Dictionary<string, DocNamespace> Namespaces { get; } = new Dictionary<string, DocNamespace>();
-
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
 
         public IndexConfig Index { get; } = new IndexConfig();
 
-        public SummaryConfig Summary { get; } = new SummaryConfig();
-
         public DirectoryInfo SourceDirectory { get; set; }
 
-        public static HtmlContext Load(string path)
+        public override string Namespace { get; } = "";
+
+        public static HtmlContext Load(string title, string path)
         {
-            HtmlContext cxt = new HtmlContext();
+            HtmlContext cxt = new HtmlContext(title);
             XmlDocument doc = new XmlDocument();
 
             if (File.Exists(path))
@@ -145,21 +147,6 @@ namespace HtmlDocGenerator
 
                 if (intro != null)
                     cxt.Index.Intro = intro.InnerText;
-
-                // Summary config                
-                if (summary != null)
-                {
-                    XmlNode sumMaxLength = summary["maxlength"];
-                    if (sumMaxLength != null)
-                    {
-                        if (int.TryParse(sumMaxLength.InnerText, out int maxLen))
-                            cxt.Summary.MaxLength = maxLen;
-                    }
-
-                    XmlNode sumReadMore = summary["readmore"];
-                    if (sumReadMore != null)
-                        cxt.Summary.ReadMore = sumReadMore.InnerText;
-                }
 
                 // Icon config
                 if (icons != null)
@@ -249,22 +236,36 @@ namespace HtmlDocGenerator
 
         public DocObject CreateObject(Type type)
         {
-            string ns = type.Namespace;
-            string qualifiedName = $"{ns}.{type.Name}";
-
-            if (!ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj))
+            if (!ObjectsByQualifiedName.TryGetValue(type.FullName, out DocObject obj))
             {
                 obj = new DocObject(type.Name);
                 obj.UnderlyingType = type;
-                ObjectsByQualifiedName[qualifiedName] = obj;
+                ObjectsByQualifiedName[type.FullName] = obj;
 
-                if (!Namespaces.TryGetValue(ns, out DocNamespace dnSpace))
+                string[] nsParts = type.Namespace.Split('.');
+                DocElement parent = this;
+                for(int i = 0; i < nsParts.Length; i++)
                 {
-                    dnSpace = new DocNamespace(ns);
-                    Namespaces.Add(ns, dnSpace);
+                    if (!parent.Members.TryGetValue(nsParts[i], out List<DocElement> oList))
+                    {
+                        oList = new List<DocElement>();
+                        parent.Members.Add(nsParts[i], oList);
+                        parent = new DocNamespace(nsParts[i]);
+                        oList.Add(parent);
+                    }
+                    else
+                    {
+                        parent = oList[0];
+                    }
                 }
 
-                dnSpace.Objects.Add(obj);
+                if (!parent.Members.TryGetValue(obj.Name, out List<DocElement> objList))
+                {
+                    objList = new List<DocElement>();
+                    parent.Members.Add(obj.Name, objList);
+                }
+
+                objList.Add(obj);
             }
 
             return obj;
