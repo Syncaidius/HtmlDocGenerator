@@ -18,10 +18,8 @@ namespace HtmlDocGenerator
 
         }
 
-        public class IndexConfig
-        {
-            public string Intro { get; set; }
-        }
+        [JsonProperty]
+        public string Intro { get; set; }
 
         public class TemplateConfig
         {
@@ -60,8 +58,6 @@ namespace HtmlDocGenerator
         public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
 
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
-
-        public IndexConfig Index { get; } = new IndexConfig();
 
         public DirectoryInfo SourceDirectory { get; set; }
 
@@ -146,7 +142,7 @@ namespace HtmlDocGenerator
                 }
 
                 if (intro != null)
-                    cxt.Index.Intro = intro.InnerText;
+                    cxt.Intro = intro.InnerText;
 
                 // Icon config
                 if (icons != null)
@@ -281,6 +277,13 @@ namespace HtmlDocGenerator
             string qualifiedName = $"{ns}.{objName}";
             ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj);
             return obj;
+        }
+
+        [JsonProperty]
+        public override string Name
+        {
+            get => base.Name;
+            set => base.Name = value;
         }
     }
 }

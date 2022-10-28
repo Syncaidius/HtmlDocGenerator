@@ -8,32 +8,52 @@ function populateIndex() {
     keys = keys.sort(sortStrings);
 
     keys.forEach((key, index) => {
-        buildTreeNode(di, key, docData.Members[key], 0);
+        buildTreeNode(di, key, "", docData.Members[key], 0);
     });
-    /*let keys = Object.keys(docData.Members);
-    keys = keys.sort();
-
-    keys.forEach((ns, index) => {
-        let branchHtml = populateIndexBranch(ns, ns, 0, () => {
-            let cHtml = "";
-            for (let i = 0; i < objTypes.length; i++) { 
-                let oType = objTypes[i];
-                cHtml += generateObjectIndex(oType, docData.Namespaces[ns], oType, oType);
-            }
-
-            return cHtml;
-        });
-        di.append(branchHtml);
-    });*/
 }
 
-function buildTreeNode(el, title, dataNode, treeDepth) {
-    let html = `<div id="dataNode" class="sec-namespace sec-namespace${(treeDepth > 0 ? `-noleft` : ``)}">`;
+function buildTreeNode(el, title, parentPath, dataNode, treeDepth) {
+    let curPath = `${parentPath}${(parentPath.length > 0 ? "." : "")}${title}`;
+    let html = `<div id="i-${curPath}" class="sec-namespace sec-namespace${(treeDepth > 0 ? "-noleft" : "")}">`;
     html += `       <span class="namespace-toggle\">${title}</span><br/>`;
-    html += `   <div class="sec-namespace-inner">`;
-
+    html += `   <div id="in-${curPath}" class="sec-namespace-inner">`;
     html += `</div></div>`;
-    return el.append(html);
+    el.append(html);
+
+    let elInner = $(`#in-${curPath}`);
+    console.log(`Current path '${curPath}'`);
+
+    dataNode.forEach((entry, index) => {
+        if (entry.Members == null)
+            return;
+
+        let keys = Object.keys(entry.Members);
+
+        keys = keys.sort(sortStrings);
+        keys.forEach((mName, index) => {
+            let memberArray = entry.Members[mName];
+            if (memberArray.length == 0)
+                return;
+
+            // We're building an index tree, so we only need to know about the first entry of each member, to avoid duplicate index listings.
+            let memberNode = memberArray[0];
+            let memType = memberNode.ObjectType;
+
+            switch (memType) {
+                case "Namespace":
+                    buildTreeNode(elInner, mName, curPath, memberNode, 0); // Namespace nodes start at depth 0.
+                    break;
+
+                case "Struct":
+                case "Event":
+                case "Constructor":
+                case "Property":
+                case "Class":
+                    // TODO generate sub-category using a "language" list for keywords (e.g. Class object type gets put into a "Classes" node)
+                    break;
+            }
+        });
+    });
 }
 
 function toHtml(str) {
@@ -54,73 +74,9 @@ function sortStrings(a, b) {
     return 0;
 }
 
-function populateIndexBranch(node, title, depth, contentCallback) {
-    let html = `<div id="${namespace}${title}" class="sec-namespace sec-namespace${(depth > 0 ? `-noleft` : ``)}">`;
-    html += `       <span class="namespace-toggle\">${title}</span><br/>`;
-    html += `   <div class="sec-namespace-inner">`;
-
-    if(contentCallback != null)
-        html += contentCallback();
-
-    html += `</div></div>`;
-
-    return html;
-}
-
-function generateObjectIndex(title, ns, title, objType) {
-    let filteredList = ns.Objects.filter(o => o.DocType == objType);
-    if (filteredList.length == 0)
-        return "";
-
-    return populateIndexBranch(ns, title, 1, () => {
-        let html = "";
-        for (let obj of filteredList) {
-            let htmlIcon = getIcon(obj);
-            let htmlName = toHtml(obj.Name);
-
-            if (obj.MembersByType.length == 0 || obj.DocType == "Enum") {
-                html += `<table class="sec-obj-index"><thead><tr>
-                            <th class="col-type-icon"></th>
-                            <th class="col-type-name"></th>
-                            </tr></thead><tbody>
-                            <tr id="${ns}-${htmlName}" class="sec-namespace-obj">
-                                <td>${htmlIcon}</td>
-                                <td><span class="doc-page-target" data-url="${obj.Name}">${htmlName}</span></td>
-                            </tr>
-                        </tbody></table>\n`;
-            }
-            else {
-                //let nsObj = `${ns}${title}`;
-                html += populateIndexBranch(ns, obj.HtmlName, 2, () => {
-                    let innerHtml = "";
-                    // TODO replace with JS section generators
-
-                    /*for (let secGen in _objSectionGens) {
-                        if (secGen is ObjectMemberSectionGenerator memSecGen)
-                        {
-                            let secHtml = memSecGen.GenerateIndexTreeItems(context, nsObj, obj);
-    
-                            if (secHtml.Length > 0) {
-                                let secTitle = secGen.GetTitle();
-                                let nsSec = $"{nsObj}{secTitle}";
-    
-                                innerHtml += GenerateTreeBranch(context, nsSec, secTitle, secHtml, 3);
-                            }
-                        }
-                    }*/
-
-                    return innerHtml;
-                });
-            }
-        }
-
-        return html;
-    });
-}
-
 $(document).ready(function () {
     // Set page title
-    $('#doc-title').html(docData.Title);
+    $('#doc-title').html(docData.Name);
     $('#doc-intro').html(docData.Intro);
 
     populateIndex();

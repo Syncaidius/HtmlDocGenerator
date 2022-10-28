@@ -42,6 +42,9 @@ namespace HtmlDocGenerator
             }
             else
             {
+                if(_type.BaseType != null)
+                    BaseTypeName = $"{_type.BaseType.Namespace}.{HtmlHelper.GetHtmlName(_type.BaseType)}";
+
                 MemberInfo[] members = _type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
                 foreach(MemberInfo member in members)
@@ -110,6 +113,9 @@ namespace HtmlDocGenerator
 
         [JsonProperty]
         public DocObjectType DocType { get; set; }
+
+        [JsonProperty]
+        public string BaseTypeName { get; private set; }
 
         public Type UnderlyingType
         {
