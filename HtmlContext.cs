@@ -260,13 +260,7 @@ namespace HtmlDocGenerator
                     }
                 }
 
-                if (!parent.Members.TryGetValue(obj.Name, out List<DocElement> objList))
-                {
-                    objList = new List<DocElement>();
-                    parent.Members.Add(obj.Name, objList);
-                }
-
-                objList.Add(obj);
+                parent.AddMember(obj);
             }
 
             return obj;
