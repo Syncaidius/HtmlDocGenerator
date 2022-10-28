@@ -15,10 +15,21 @@ namespace HtmlDocGenerator
         public DocParameter(ParameterInfo info) : base(info.Name, DocObjectType.Parameter)
         {
             Info = info;
+            TypeName = $"{Info.ParameterType.Namespace}.{HtmlHelper.GetHtmlName(Info.ParameterType)}";
         }
 
         public ParameterInfo Info { get; }
 
+        [JsonProperty]
+        public string TypeName { get; }
+
         public override string Namespace => Info.ParameterType.Namespace;
+
+        [JsonProperty]
+        public override string Name
+        {
+            get => base.Name;
+            set => base.Name = value;
+        }
     }
 }

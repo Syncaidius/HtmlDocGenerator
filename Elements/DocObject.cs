@@ -13,20 +13,20 @@ namespace HtmlDocGenerator
     {
         Type _type;
 
-        public DocObject(string name) : base(name, DocObjectType.ObjectType)
-        {
-            MembersByType = new Dictionary<MemberTypes, List<DocMember>>();
-        }
+        public DocObject(string name) : base(name, DocObjectType.ObjectType) { }
 
         public DocMember GetMember<T>(string name, Type[] parameters = null, Type[] genericParameters = null)
             where T : DocMember
         {
-            if (MembersByName.TryGetValue(name, out List<DocMember> memList))
+            if (Members.TryGetValue(name, out List<DocElement> memList))
             {
-                foreach (DocMember member in memList)
+                foreach (DocElement element in memList)
                 {
-                    if (member.IsMatch(this, name, parameters, genericParameters))
-                        return member;
+                    if (element is DocMember member)
+                    {
+                        if (member.IsMatch(this, name, parameters, genericParameters))
+                            return member;
+                    }
                 }
             }
 
@@ -38,7 +38,7 @@ namespace HtmlDocGenerator
             if (_type == null)
             {
                 DocType = DocObjectType.Unknown;
-                MembersByName.Clear();
+                Members.Clear();
             }
             else
             {
@@ -58,6 +58,10 @@ namespace HtmlDocGenerator
                                 dm = new DocMethodMember(this, ci);
                             break;
 
+                        case PropertyInfo pi:
+                            dm = new DocPropertyMember(this, pi);
+                            break;
+
                         default:
                             dm = new DocMember(this, member);
                             break;
@@ -68,11 +72,6 @@ namespace HtmlDocGenerator
 
                     AddMember(dm);
                 }
-
-                // Sort member lists
-                NameComparer nameComparer = new NameComparer();
-                foreach (List<DocMember> objList in MembersByType.Values)
-                    objList.Sort(nameComparer);
 
                 // Figure out the type of object that is defined.
                 if (_type.IsClass)
@@ -95,30 +94,19 @@ namespace HtmlDocGenerator
 
         private void AddMember(DocMember member)
         {
-            if (!MembersByName.TryGetValue(member.Name, out List<DocMember> memList))
+            if (!Members.TryGetValue(member.Name, out List<DocElement> memList))
             {
-                memList = new List<DocMember>();
-                MembersByName.Add(member.Name, memList);
-            }
-
-            if (!MembersByType.TryGetValue(member.BaseInfo.MemberType, out List<DocMember> byTypeList))
-            {
-                byTypeList = new List<DocMember>();
-                MembersByType.Add(member.BaseInfo.MemberType, byTypeList);
+                memList = new List<DocElement>();
+                Members.Add(member.Name, memList);
             }
 
             memList.Add(member);
-            byTypeList.Add(member);
         }
 
         public override string ToString()
         {
-            return $"{Name} - {DocType} - Members: {MembersByName.Count}";
+            return $"{Name} - {DocType} - Members: {Members.Count}";
         }
-
-        public Dictionary<string, List<DocMember>> MembersByName { get; } = new Dictionary<string, List<DocMember>>();
-        
-        public Dictionary<MemberTypes, List<DocMember>> MembersByType { get; } = new Dictionary<MemberTypes, List<DocMember>>();
 
         [JsonProperty]
         public DocObjectType DocType { get; set; }

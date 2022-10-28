@@ -4,7 +4,13 @@ function populateIndex() {
     let di = $("#doc-index");
     di.html("");
 
-    let keys = Object.keys(docData.Namespaces);
+    let keys = Object.keys(docData.Members);
+    keys = keys.sort(sortStrings);
+
+    keys.forEach((key, index) => {
+        buildTreeNode(di, key, docData.Members[key], 0);
+    });
+    /*let keys = Object.keys(docData.Members);
     keys = keys.sort();
 
     keys.forEach((ns, index) => {
@@ -18,7 +24,16 @@ function populateIndex() {
             return cHtml;
         });
         di.append(branchHtml);
-    });
+    });*/
+}
+
+function buildTreeNode(el, title, dataNode, treeDepth) {
+    let html = `<div id="dataNode" class="sec-namespace sec-namespace${(treeDepth > 0 ? `-noleft` : ``)}">`;
+    html += `       <span class="namespace-toggle\">${title}</span><br/>`;
+    html += `   <div class="sec-namespace-inner">`;
+
+    html += `</div></div>`;
+    return el.append(html);
 }
 
 function toHtml(str) {
@@ -29,7 +44,17 @@ function getIcon(el) {
     return `<img src="img/${el.DocType.toLowerCase()}.png"/>`;
 }
 
-function populateIndexBranch(namespace, title, depth, contentCallback) {
+function sortStrings(a, b) {
+    if (a > b) 
+        return 1;
+
+    if (a < b) 
+        return -1;
+
+    return 0;
+}
+
+function populateIndexBranch(node, title, depth, contentCallback) {
     let html = `<div id="${namespace}${title}" class="sec-namespace sec-namespace${(depth > 0 ? `-noleft` : ``)}">`;
     html += `       <span class="namespace-toggle\">${title}</span><br/>`;
     html += `   <div class="sec-namespace-inner">`;

@@ -32,7 +32,6 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             if (_context == null)
                 return;
 
-            //DocGenerator generator = new DocGenerator();
             DocParser parser = new DocParser();
             _nuget = new NugetManager(PACKAGE_STORE_PATH);
 
@@ -50,7 +49,6 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
                 destPath = Path.GetFullPath(destPath);
 
             parser.Parse(_context, destPath);
-            //generator.Generate(_context, $"{destPath}\\", $"{destPath}\\index.html");
 
             JsonSerializerSettings settings = new JsonSerializerSettings()
             {

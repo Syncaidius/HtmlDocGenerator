@@ -238,7 +238,12 @@ namespace HtmlDocGenerator
         {
             if (!ObjectsByQualifiedName.TryGetValue(type.FullName, out DocObject obj))
             {
-                obj = new DocObject(type.Name);
+                string objName = type.Name;
+
+                if (type.IsGenericType)
+                    objName = HtmlHelper.GetHtmlName(type);
+
+                obj = new DocObject(objName);
                 obj.UnderlyingType = type;
                 ObjectsByQualifiedName[type.FullName] = obj;
 

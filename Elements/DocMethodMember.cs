@@ -27,6 +27,12 @@ namespace HtmlDocGenerator
                 Type[] gParams = info.GetGenericArguments();
                 for (int i = 0; i < gParams.Length; i++)
                     GenericParameters.Add(new DocTypeParameter(gParams[i]));
+
+                if (info is MethodInfo methodInfo)
+                {
+                    if(methodInfo.ReturnType != typeof(void))
+                        ReturnTypeName = $"{methodInfo.ReturnType.Namespace}.{HtmlHelper.GetHtmlName(methodInfo.ReturnType)}";
+                }
             }
         }
 
@@ -63,7 +69,12 @@ namespace HtmlDocGenerator
         }
 
         [JsonProperty]
+        public string ReturnTypeName { get; }
+
         public List<DocParameter> Parameters { get; } = new List<DocParameter>();
+
+        [JsonProperty("Parameters")]
+        public List<DocParameter> SerializedParameters => Parameters.Count > 0 ? Parameters : null;
 
         public Dictionary<string, DocParameter> ParametersByName { get; } = new Dictionary<string, DocParameter>();
 

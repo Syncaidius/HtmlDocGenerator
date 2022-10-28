@@ -18,7 +18,6 @@ namespace HtmlDocGenerator
         {
             Parent = parent;
             BaseInfo = info;
-            DeclaringType = BaseInfo.DeclaringType.FullName; // TODO parse name incase it's generic.
 
             switch (BaseInfo.MemberType)
             {
@@ -39,9 +38,6 @@ namespace HtmlDocGenerator
         {
             return $"{BaseInfo.Name} - Type: {BaseInfo.MemberType}";
         }
-
-        [JsonProperty]
-        public string DeclaringType { get; }
 
         public DocObject Parent { get; }
 

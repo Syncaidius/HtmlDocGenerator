@@ -87,9 +87,6 @@ namespace HtmlDocGenerator
                             {
                                 DocObject obj = context.CreateObject(t);
                                 obj.UnderlyingType = t;
-
-                                if (t.IsGenericType)
-                                    obj.Name = HtmlHelper.GetHtmlName(t);
                             }
                         }
                     }
@@ -373,8 +370,9 @@ namespace HtmlDocGenerator
                     if (attCRef != null)
                     {
                         DocElement refObj = ParseXmlName(context, attCRef.Value, out DocObjectType mType, out string mName);
-                        if (refObj != null)
-                            summary = $"<a href=\"../{refObj.HtmlUrl}\">{refObj.Name}</a>";
+                        if (refObj != null) { 
+                            summary = $"<b class=\"obj-ref\" data-type=\"{refObj.Namespace}.{refObj.Name}\">{refObj.Name}</b>";
+                                }
                         else if (mType == DocObjectType.Invalid)
                             summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
                     }
