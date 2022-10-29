@@ -34,7 +34,8 @@ class BaseLoader {
             };
         });
 
-        elPage.append(`<div class="page-title"><span id="page-title-span">${pathHtml}</span></div>`);
+        let iconHtml = getIcon(dataNode);
+        elPage.append(`<div class="page-title">${iconHtml}<span id="page-title-span">${pathHtml}</span></div>`);
 
         let contentHtml = this.loadContent(dataNode, docPath);
         if (contentHtml != null && contentHtml.length > 0)

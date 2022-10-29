@@ -22,7 +22,7 @@ namespace HtmlDocGenerator
         /// </summary>
         public XmlNode XmlRoot { get; set; }
 
-        public bool Load(HtmlContext context)
+        public bool Load(DocContext context)
         {
             if (!File.Exists(FilePath))
                 return false;

@@ -7,6 +7,12 @@
 
 	<intro>Here you can find all of the available types in Molten. Click on a namespace to expand/close it.</intro>
 	
+	<!--A list of css classes for various documentation elements. Mainly used when parsing summary strings.-->
+	<css>
+		<target>doc-target</target>
+		<invalid>doc-invalid</invalid>
+	</css>
+	
 	<definitions>
 		<def>src\Molten.Engine.xml</def>
 		<def>src\Molten.Font.xml</def>

@@ -11,9 +11,10 @@ using System.Xml.XPath;
 namespace HtmlDocGenerator
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class HtmlContext : DocElement
+    public class DocContext : DocElement
     {
-        public HtmlContext(string name) : base(name, DocObjectType.Namespace)
+        public DocContext(string name) : 
+            base(name, DocObjectType.Namespace)
         {
 
         }
@@ -21,11 +22,11 @@ namespace HtmlDocGenerator
         [JsonProperty]
         public string Intro { get; set; }
 
-        public class TemplateConfig
+        public class CssConfig
         {
-            public string IndexHtml { get; set; }
+            public string Target { get; set; } = "doc-target";
 
-            public string ObjectHtml { get; set; }
+            public string Invalid { get; set; } = "doc-invalid";
         }
 
         public class SummaryConfig
@@ -42,8 +43,6 @@ namespace HtmlDocGenerator
         
         public string NugetStore { get; private set; } = "packages\\";
 
-        public TemplateConfig Template { get; } = new TemplateConfig();
-
         public List<string> Definitions { get; } = new List<string>();
 
         public List<string> Scripts { get; } = new List<string>();
@@ -52,20 +51,21 @@ namespace HtmlDocGenerator
 
         public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
 
-        /// <summary>
-        /// Icon path stored by key name. The key name is taken from the XML tag name which defined the icon path in config.xml.
-        /// </summary>
-        public Dictionary<string, string> Icons { get; } = new Dictionary<string, string>();
-
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
+
+        public CssConfig Css { get; } = new CssConfig()
+        {
+            Target = "doc-target",
+            Invalid = "doc-invalid"
+        };
 
         public DirectoryInfo SourceDirectory { get; set; }
 
         public override string Namespace { get; } = "";
 
-        public static HtmlContext Load(string title, string path)
+        public static DocContext Load(string title, string path)
         {
-            HtmlContext cxt = new HtmlContext(title);
+            DocContext cxt = new DocContext(title);
             XmlDocument doc = new XmlDocument();
 
             if (File.Exists(path))
@@ -83,13 +83,12 @@ namespace HtmlDocGenerator
                 XmlNode dest = cfg["destination"];
                 XmlNode defs = cfg["definitions"];
                 XmlNode nuget = cfg["nuget"];
-                XmlNode template = cfg["template"];
                 XmlNode scripts = cfg["scripts"];
                 XmlNode summary = cfg["summary"];
                 XmlNode icons = cfg["icons"];
                 XmlNode intro = cfg["intro"];
                 XmlNode source = cfg["source"];
-
+                XmlNode css = cfg["css"];
 
                 if (dest != null)
                     cxt.DestinationPath = dest.InnerText;
@@ -101,15 +100,6 @@ namespace HtmlDocGenerator
                         dir = Path.GetFullPath(dir);
 
                     cxt.SourceDirectory = new DirectoryInfo(dir);
-                }
-
-                if (template != null)
-                {
-                    XmlNode xIndex = template["index"];
-                    cxt.Template.IndexHtml = cxt.LoadTemplate(xIndex);
-
-                    XmlNode xObject = template["object"];
-                    cxt.Template.ObjectHtml = cxt.LoadTemplate(xObject);
                 }
 
                 foreach (XmlNode child in defs.ChildNodes)
@@ -144,11 +134,17 @@ namespace HtmlDocGenerator
                 if (intro != null)
                     cxt.Intro = intro.InnerText;
 
-                // Icon config
-                if (icons != null)
+                // Css config
+                if (css != null)
                 {
-                    foreach (XmlNode iNode in icons.ChildNodes)
-                        cxt.Icons.Add(iNode.Name.ToLower(), iNode.InnerText);
+                    XmlNode docTarget = css["target"];
+                    XmlNode docInvalid = css["invalid"];
+
+                    if (docTarget != null)
+                        cxt.Css.Target = docTarget.InnerText;
+
+                    if (docInvalid != null)
+                        cxt.Css.Invalid = docInvalid.InnerText;
                 }
 
                 if (scripts != null)
@@ -194,30 +190,6 @@ namespace HtmlDocGenerator
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"ERROR: {message}");
             Console.ForegroundColor = pCol;
-        }
-
-        public string GetIcon(MemberInfo info, string pathPrefix = "")
-        {
-            return GetIcon(info.MemberType.ToString(), pathPrefix);
-        }
-
-        public string GetIcon(DocObject obj, string pathPrefix = "")
-        {
-            string iconName = obj.DocType.ToString().ToLower();
-            return GetIcon(iconName, pathPrefix);
-        }
-
-        public string GetIcon(string iconName, string pathPrefix = "")
-        {
-            string html = "&nbsp;";
-
-            if (!string.IsNullOrWhiteSpace(iconName))
-            {
-                if (Icons.TryGetValue(iconName.ToLower(), out string iconPath))
-                    html = $"<img src=\"{pathPrefix}{iconPath}\" title=\"{iconName}\" alt\"{iconName} icon\"/>";
-            }
-
-            return html;
         }
 
         /// <summary>

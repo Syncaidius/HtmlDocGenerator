@@ -27,12 +27,12 @@ namespace HtmlDocGenerator
 
 
         /// <summary>
-        /// Parses a summary xml file and adds it's information to the provided <see cref="HtmlContext"/>.
+        /// Parses a summary xml file and adds it's information to the provided <see cref="DocContext"/>.
         /// </summary>
-        /// <param name="context">The <see cref="HtmlContext"/> to which the parsed XML will be added.</param>
+        /// <param name="context">The <see cref="DocContext"/> to which the parsed XML will be added.</param>
         /// <param name="xmlPath">The path of the XML summary file to be parsed.</param>
         /// <param name="assemblyPath">A custom path to the assembly file from which the xml summary file was generated.</param>
-        public void LoadXml(HtmlContext context, string xmlPath, string assemblyPath = null)
+        public void LoadXml(DocContext context, string xmlPath, string assemblyPath = null)
         {
             FileInfo info = new FileInfo(xmlPath);
             if (!info.Exists)
@@ -94,29 +94,8 @@ namespace HtmlDocGenerator
             }
         }
 
-        public void Parse(HtmlContext context, string destPath)
+        public void Parse(DocContext context, string destPath)
         {
-            /*DocElement.NameComparer nameComparer = new DocElement.NameComparer();
-
-            // Set page URLs. This needs to be done before parsing XML, as some summaries may reference other objects or members.
-            foreach (string ns in context.Namespaces.Keys)
-            {
-                DocNamespace dnSpace = context.Namespaces[ns];
-                string nsPath = context.GetFileName(ns);
-                dnSpace.DestDirectory = new DirectoryInfo($"{destPath}{nsPath}");
-                dnSpace.Objects.Sort(nameComparer);
-
-                foreach (DocObject obj in dnSpace.Objects)
-                {
-                    string objEscaped = context.GetFileName(obj.Name);
-                    obj.HtmlUrl = $"{nsPath}/{objEscaped}.html"; // TODO this should be set during parsing
-                    obj.PageFilePath = $"{dnSpace.DestDirectory.FullName}\\{objEscaped}.html";
-
-
-                    // TODO generate member page paths/URLs
-                }
-            }*/
-
             // Parse assembly XML members.
             foreach (DocAssembly a in context.Assemblies.Values)
             {
@@ -134,7 +113,7 @@ namespace HtmlDocGenerator
             }
         }
 
-        private void ParseMember(HtmlContext context, XmlNode memberNode)
+        private void ParseMember(DocContext context, XmlNode memberNode)
         {
             XmlAttribute attName = memberNode.Attributes["name"];
             if (attName == null)
@@ -175,7 +154,7 @@ namespace HtmlDocGenerator
             }
         }
 
-        private DocElement ParseXmlName(HtmlContext context, string typeName, out DocObjectType mType, out string name)
+        private DocElement ParseXmlName(DocContext context, string typeName, out DocObjectType mType, out string name)
         {
             typeName = typeName.Replace("&lt;", "<").Replace("&gt;", ">");
             string ns = "";
@@ -280,7 +259,7 @@ namespace HtmlDocGenerator
             return el;
         }
 
-        private string ParseSummary(HtmlContext context, string xmlText, XmlDocument xmlDoc = null)
+        private string ParseSummary(DocContext context, string xmlText, XmlDocument xmlDoc = null)
         {
             xmlText = xmlText.Trim();
             xmlDoc = xmlDoc ?? new XmlDocument();
@@ -357,7 +336,7 @@ namespace HtmlDocGenerator
             return summary;
         }
 
-        private string ParseSummaryXml(HtmlContext context, string xml, XmlDocument xmlDoc)
+        private string ParseSummaryXml(DocContext context, string xml, XmlDocument xmlDoc)
         {
             xmlDoc.LoadXml(xml);
             XmlNode subNode = xmlDoc.FirstChild;
@@ -371,10 +350,10 @@ namespace HtmlDocGenerator
                     {
                         DocElement refObj = ParseXmlName(context, attCRef.Value, out DocObjectType mType, out string mName);
                         if (refObj != null) { 
-                            summary = $"<b class=\"obj-ref\" data-type=\"{refObj.Namespace}.{refObj.Name}\">{refObj.Name}</b>";
+                            summary = $"<b class=\"{context.Css.Target}\" data-type=\"{refObj.Namespace}.{refObj.Name}\">{refObj.Name}</b>";
                                 }
                         else if (mType == DocObjectType.Invalid)
-                            summary = $"<b class=\"obj-invalid\" title=\"Invalid object name\">{mName}</b>";
+                            summary = $"<b class=\"${context.Css.Invalid}\" title=\"Invalid object name\">{mName}</b>";
                     }
                     break;
 

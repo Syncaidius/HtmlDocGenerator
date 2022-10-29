@@ -32,7 +32,7 @@ body {
 
 .sec-page {
     width: 100%;
-    margin-top: 0px;
+    margin-top: 20px;
     margin-left: 20px;
     display:flex;
     flex-direction:column;
@@ -79,19 +79,16 @@ tr {
     margin-left: 10px;
     padding-left: 10px;
     padding-bottom: 1px;
-    background: linear-gradient(90deg, rgba(68,68,68,1) 24%, rgba(68,68,68,0) 75%);
 }
 
 .sec-namespace-noleft {
     margin-left: 0px;
     padding-left: 10px;
     padding-bottom: 1px;
-    background: linear-gradient(90deg, rgba(68,68,68,1) 24%, rgba(68,68,68,0) 65%);
 }
 
 .sec-namespace-inner {
     display: none;
-    background: linear-gradient(90deg, rgba(51,51,51,1) 18%, rgba(51,51,51,0) 55%);
     margin: 10px 10px 0px 10px;
 }
 
@@ -151,6 +148,18 @@ tr {
 
 .page-title{
     font-size:24px;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+}
+
+.page-title span{
+    vertical-align: middle;
+}
+
+.page-title img{
+    width: 32px;
+    margin-right: 10px;
 }
 
 .page-title b {

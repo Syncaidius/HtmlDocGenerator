@@ -11,7 +11,7 @@ namespace HtmlDocGenerator
     /// </summary>
     public abstract class ObjectSectionGenerator : HtmlGenerator
     {
-        public string Generate(HtmlContext config, string ns, DocObject obj)
+        public string Generate(DocContext config, string ns, DocObject obj)
         {
             string html = "";
             string contentHtml = OnGenerate(config, ns, obj);
@@ -34,7 +34,7 @@ namespace HtmlDocGenerator
 
         public abstract string GetTitle();
 
-        protected abstract string OnGenerate(HtmlContext config, string ns, DocObject obj);
+        protected abstract string OnGenerate(DocContext config, string ns, DocObject obj);
 
     }
 }

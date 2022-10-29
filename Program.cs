@@ -14,7 +14,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
         const string PACKAGE_STORE_PATH = "packages\\";
 
         static NugetManager _nuget;
-        static HtmlContext _context;
+        static DocContext _context;
 
         static void Main(string[] args)
         {
@@ -28,7 +28,7 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
 
         private static void Run(string[] args)
         {
-            _context = HtmlContext.Load("Molten Engine Documentation", "config.xml");
+            _context = DocContext.Load("Molten Engine Documentation", "config.xml");
             if (_context == null)
                 return;
 

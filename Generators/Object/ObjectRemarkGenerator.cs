@@ -16,7 +16,7 @@ namespace HtmlDocGenerator
             return "Remarks";
         }
 
-        protected override string OnGenerate(HtmlContext config, string ns, DocObject obj)
+        protected override string OnGenerate(DocContext config, string ns, DocObject obj)
         {
             if (string.IsNullOrWhiteSpace(obj.Remark))
                 return "";
