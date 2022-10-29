@@ -99,15 +99,15 @@ tr {
 .sec-namespace-inner {
     display: none;
     background: linear-gradient(90deg, rgba(51,51,51,1) 18%, rgba(51,51,51,0) 55%);
-    margin: 10px 10px 10px 10px;
+    margin: 10px 10px 0px 10px;
 }
 
-    .sec-namespace-inner table tr img {
-        margin-left: 5px;
-        margin-right: 5px;
-        width: 16px;
-        height: 16px;
-    }
+.sec-namespace-inner table tr img {
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 16px;
+    height: 16px;
+}
 
 .sec-namespace-obj {
     margin-left: 20px;
@@ -138,11 +138,20 @@ tr {
     user-select: none; /* Prevent text selection */
 }
 
-    .namespace-toggle:hover {
-        color: var(--main-color);
-    }
+.namespace-toggle:hover {
+    color: var(--main-color);
+}
 
-.doc-page-target:hover {
+.doc-target a{
+    color: white;
+    vertical-align:top;
+}
+
+.doc-target img{
+    width: 20px;
+}
+
+.doc-target a:hover {
     cursor: pointer;
     color: var(--main-color);
 }

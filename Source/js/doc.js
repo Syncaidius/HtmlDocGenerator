@@ -16,6 +16,18 @@ function populateIndex() {
     });
 }
 
+function buildEndNode(el, title, parentPath, dataNode) {
+    let curPath = `${parentPath}${(parentPath.length > 0 && title ? "." : "")}${title}`;
+    let idName = toIDName(curPath);
+    let targetName = toIDName(title);
+
+    let iconHtml = getIcon(dataNode);
+    el.append(` <div id="t-${idName}" class="doc-target">
+                    ${iconHtml}
+                    <a data-target="${parentPath}" data-target-sec="a-${targetName}">${title}</a>
+                </div>`);
+}
+
 function buildTreeNode(el, title, parentPath, dataNode, treePath, empty = false) {
     let curPath = `${parentPath}${(parentPath.length > 0 && title ? "." : "")}${title}`;
     if (dataNode.DocType == "Namespace")
@@ -27,14 +39,7 @@ function buildTreeNode(el, title, parentPath, dataNode, treePath, empty = false)
                     <div id="in-${idName}" class="sec-namespace-inner"></div>
                 </div>`);
 
-    console.log(`Current path '${curPath}'`);
     let elInner = $(`#in-${idName}`);
-    if (elInner.length > 0)
-        console.log(`Created element ${elInner[0].id}`);
-    else
-        console.log(`Unable to find element in-${idName}`);
-
-    console.log(`Added element ${elInner[0].id} to ${el[0].id}`);
 
     if (!dataNode.Members || empty == true)
         return elInner;
@@ -65,13 +70,22 @@ function buildTreeNode(el, title, parentPath, dataNode, treePath, empty = false)
                 let categoryName = toPlural(memType);
                 buildCategorizedNode(elInner, categoryName, mName, curPath, memberNode, nextTreePath);
                 break;
+
+            case "Field":
+            case "Property":
+            case "Event":
+            case "Constructor":
+            case "Method":
+                let endName = toPlural(memType);
+                buildCategorizedNode(elInner, endName, mName, curPath, memberNode, nextTreePath, true);
+                break;
         }
     });
 
     return elInner;
 }
 
-function buildCategorizedNode(elParent, category, title, parentPath, dataNode, treePath) {
+function buildCategorizedNode(elParent, category, title, parentPath, dataNode, treePath, isEnd = false) {
     elParent.categories = elParent.categories || {};
 
     if (elParent.categories[category] == null)
@@ -80,7 +94,11 @@ function buildCategorizedNode(elParent, category, title, parentPath, dataNode, t
     let elInner = elParent.categories[category];
     let nextTreePath = [...treePath, elInner];
     let curPath = `${parentPath}${(parentPath.length > 0 && category ? "." : "")}${category}`;
-    buildTreeNode(elInner, title, curPath, dataNode, nextTreePath);
+
+    if (isEnd == true)
+        buildEndNode(elInner, title, parentPath, dataNode, nextTreePath);
+    else
+        buildTreeNode(elInner, title, parentPath, dataNode, nextTreePath);
 }
 
 function toPlural(word) {
@@ -90,7 +108,7 @@ function toPlural(word) {
     let last = word[word.length - 1].toLowerCase();
     switch (last) {
         case 'y':
-            return word.substring(0, word.length) + "ies";
+            return word.substring(0, word.length - 1) + "ies";
 
         case 'h':
         case 's':
@@ -110,8 +128,8 @@ function toHtml(str) {
     return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function getIcon(el) {
-    return `<img src="img/${el.DocType.toLowerCase()}.png"/>`;
+function getIcon(docNode) {
+    return `<img src="img/${docNode.DocType.toLowerCase()}.png"/>`;
 }
 
 function sortStrings(a, b) {
