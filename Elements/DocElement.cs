@@ -24,7 +24,7 @@ namespace HtmlDocGenerator
         public DocElement(string name, DocObjectType initialType)
         {
             Name = name;
-            ObjectType = initialType;
+            DocType = initialType;
         }
 
         [JsonProperty]
@@ -36,7 +36,7 @@ namespace HtmlDocGenerator
         public abstract string Namespace { get; }
 
         [JsonProperty]
-        public DocObjectType ObjectType { get; set; }
+        public DocObjectType DocType { get; set; }
 
         public void AddMember(DocElement element)
         {

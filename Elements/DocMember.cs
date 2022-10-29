@@ -21,11 +21,11 @@ namespace HtmlDocGenerator
 
             switch (BaseInfo.MemberType)
             {
-                case MemberTypes.Property: ObjectType = DocObjectType.Property; break;
-                case MemberTypes.Field: ObjectType = DocObjectType.Field; break;
-                case MemberTypes.Method: ObjectType = DocObjectType.Method; break;
-                case MemberTypes.Constructor: ObjectType = DocObjectType.Constructor;break;
-                case MemberTypes.Event: ObjectType = DocObjectType.Event; break;
+                case MemberTypes.Property: DocType = DocObjectType.Property; break;
+                case MemberTypes.Field: DocType = DocObjectType.Field; break;
+                case MemberTypes.Method: DocType = DocObjectType.Method; break;
+                case MemberTypes.Constructor: DocType = DocObjectType.Constructor;break;
+                case MemberTypes.Event: DocType = DocObjectType.Event; break;
             }
         }
 

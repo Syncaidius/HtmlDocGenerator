@@ -112,9 +112,6 @@ namespace HtmlDocGenerator
         }
 
         [JsonProperty]
-        public DocObjectType DocType { get; set; }
-
-        [JsonProperty]
         public string BaseTypeName { get; private set; }
 
         public Type UnderlyingType
