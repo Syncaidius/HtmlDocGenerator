@@ -48,7 +48,7 @@ function buildTreeNode(el, title, parentPath, dataNode, treePath, empty = false)
 
     let idName = toIDName(curPath);
     el.append(`<div id="i-${idName}" class="sec-namespace${(treePath.length > 1 ? "-noleft" : "")}">
-                    <span class="namespace-toggle\">${title}</span><br/>
+                    <span class="namespace-toggle\" data-target="${curPath}">${title}</span><br/>
                     <div id="in-${idName}" class="sec-namespace-inner"></div>
                 </div>`);
 
@@ -162,7 +162,7 @@ function getNode(nodePath) {
     parts.forEach((p, index) => {
         let next = node.Members[p];
 
-        if (next.length > 0)
+        if (next != null && next.length > 0)
             node = next[0];
     });
 
@@ -174,6 +174,26 @@ function getPathTitle(nodePath) {
     return parts.length > 0 ? parts[parts.length - 1] : "[No Title]";
 }
 
+function loadPage(target) {
+    let nodePath = target.data("target");
+    let node = getNode(nodePath);
+    let loader = loaders[node.DocType];
+    if (loader == null) {
+        console.log(`No loader for path "${nodePath}"`);
+        return;
+    }
+
+    let pTitle = getPathTitle(nodePath);
+    loader.load("main-page", pTitle, node, nodePath);
+}
+
+function registerDocTargets(parent) {
+    parent.find(".doc-target").on("click", function (e) {
+        let target = $(e.target);
+        loadPage(target);
+    });
+}
+
 $(document).ready(function () {
     // Set page title
     $('#doc-title').html(docData.Name);
@@ -182,6 +202,8 @@ $(document).ready(function () {
     loaders["Class"] = new ObjectLoader();
     loaders["Struct"] = loaders["Class"];
     loaders["Interface"] = loaders["Class"];
+    loaders["Enum"] = loaders["Class"];
+    loaders["Namespace"] = new NamespaceLoader();
 
     populateIndex();
 
@@ -193,6 +215,10 @@ $(document).ready(function () {
             {
                 this.parentElement.querySelector(".sec-namespace-inner").classList.toggle("sec-active");
                 this.classList.toggle("namespace-toggle-down");
+
+                console.log(`this parent: ${this.id}`)
+                let target = $(this);
+                loadPage(target);
             }
         });
     }

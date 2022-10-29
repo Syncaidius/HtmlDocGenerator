@@ -146,6 +146,12 @@ tr {
     color: var(--main-color);
 }
 
+.page-header{
+    display:flex;
+    flex-direction:column;
+    justify-content:left;
+}
+
 .page-title{
     font-size:24px;
     display: flex;
