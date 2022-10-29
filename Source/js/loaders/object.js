@@ -1,8 +1,6 @@
-import { BaseLoader } from "./base_loader";
 
-export class ObjectLoader extends BaseLoader {
-
-    load(dataNode, docPath) {
+class ObjectLoader extends BaseLoader {
+    loadContent(dataNode, docPath) {
 
     }
 

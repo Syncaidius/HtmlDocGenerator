@@ -13,16 +13,7 @@ body {
     min-height: 100%;
 }
 
-    body a {
-        color: skyblue;
-        text-decoration: none;
-    }
-
     body h2 {
-        color: var(--main-color);
-    }
-
-    body a:hover {
         color: var(--main-color);
     }
 
@@ -42,12 +33,14 @@ body {
 .sec-page {
     width: 100%;
     margin-top: 0px;
-    background-color: #555555;
+    margin-left: 20px;
+    display:flex;
+    flex-direction:column;
 }
 
-    .sec-page table {
-        border-collapse: collapse;
-    }
+.sec-page table {
+    border-collapse: collapse;
+}
 
 tr {
     border: 1px solid var(--main-color);
@@ -154,6 +147,28 @@ tr {
 .doc-target a:hover {
     cursor: pointer;
     color: var(--main-color);
+}
+
+.page-title{
+    font-size:24px;
+}
+
+.page-title b {
+    font-weight: normal;
+    font-size: 24px;
+    color: var(--main-color);
+}
+
+.page-title .doc-target{
+    color: white;
+    text-decoration: none;
+    cursor:pointer;
+}
+
+.page-title .doc-target:hover{
+    text-decoration: underline;
+    text-decoration-color: var(--main-color);
+    text-underline-offset: 6px;
 }
 
 /* Create the caret/arrow with a unicode, and style it */

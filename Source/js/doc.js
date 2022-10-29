@@ -1,4 +1,5 @@
 ﻿var objTypes = ["Class", "Struct", "Enum", "Interface"];
+var loaders = {};
 
 function populateIndex() {
     let di = $("#doc-index");
@@ -22,10 +23,22 @@ function buildEndNode(el, title, parentPath, dataNode) {
     let targetName = toIDName(title);
 
     let iconHtml = getIcon(dataNode);
-    el.append(` <div id="t-${idName}" class="doc-target">
+    el.append(` <div id="t-${idName}" class="doc-target" data-target="${parentPath}" data-target-sec="${targetName}">
                     ${iconHtml}
-                    <a data-target="${parentPath}" data-target-sec="a-${targetName}">${title}</a>
+                    <a>${title}</a>
                 </div>`);
+
+    let target = $(`#t-${idName}`);
+    target.on("click", function (e) {
+        let nodePath = target.data("target");
+        let node = getNode(nodePath);
+        let loader = loaders[node.DocType];
+        if (loader == null)
+            return;
+
+        let pTitle = getPathTitle(nodePath);
+        loader.load("main-page", pTitle, node, nodePath);
+    });
 }
 
 function buildTreeNode(el, title, parentPath, dataNode, treePath, empty = false) {
@@ -142,10 +155,33 @@ function sortStrings(a, b) {
     return 0;
 }
 
+function getNode(nodePath) {
+    let parts = nodePath.split(".");
+
+    let node = docData;
+    parts.forEach((p, index) => {
+        let next = node.Members[p];
+
+        if (next.length > 0)
+            node = next[0];
+    });
+
+    return node;
+}
+
+function getPathTitle(nodePath) {
+    let parts = nodePath.split(".");
+    return parts.length > 0 ? parts[parts.length - 1] : "[No Title]";
+}
+
 $(document).ready(function () {
     // Set page title
     $('#doc-title').html(docData.Name);
     $('#doc-intro').html(docData.Intro);
+
+    loaders["Class"] = new ObjectLoader();
+    loaders["Struct"] = loaders["Class"];
+    loaders["Interface"] = loaders["Class"];
 
     populateIndex();
 
@@ -159,17 +195,5 @@ $(document).ready(function () {
                 this.classList.toggle("namespace-toggle-down");
             }
         });
-    }
-
-    let pageTargets = document.getElementsByClassName("doc-page-target");
-    for (i = 0; i < pageTargets.length; i++) {
-        {
-            pageTargets[i].addEventListener("click", function (e) {
-                {
-                    //document.getElementById('content-target').src = e.target.dataset.url
-                    // TODO set main content to use whichever loader we need (object or member).
-                }
-            });
-        }
     }
 })
