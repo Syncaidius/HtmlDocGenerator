@@ -2,7 +2,9 @@
     --main-color: #dc5c0f;
     --main-highlight: #fe7e2f;
     --bg-color: #333333;
-    --scroll-color: #999999;
+    --bg2-color: #444444;
+    --border-color: #555555;
+    --grey-color: #999999;
 }
 
 body {
@@ -13,12 +15,8 @@ body {
     height: 100%;
     margin: 0px;
     min-height: 100%;
-    overflow:hidden;
+    overflow: hidden;
 }
-
-    body h2 {
-        color: var(--main-color);
-    }
 
     body > * {
         flex-shrink: 0;
@@ -35,7 +33,7 @@ body {
 
 .scrollable {
     overflow: scroll;
-    scrollbar-color: var(--scroll-color) var(--main-color);
+    scrollbar-color: var(--grey-color) var(--main-color);
 }
 
     .scrollable::-webkit-scrollbar {
@@ -45,7 +43,7 @@ body {
     }
 
     .scrollable::-webkit-scrollbar-thumb {
-        background: var(--scroll-color);
+        background: var(--grey-color);
         border-radius: 5px;
     }
 
@@ -272,12 +270,14 @@ body {
 }
 
 .obj-section {
-
     background-color: #333333;
     font-size: 14px;
     font-weight: normal;
     max-width: 800px;
     margin-top: 25px;
+    display:flex;
+    flex-direction:column;
+    justify-content: start left;
 }
 
     .obj-section .doc-icon {
@@ -289,7 +289,15 @@ body {
     .obj-section table {
         min-width: 100%;
         border-collapse: collapse;
-        border: 1px solid var(--main-color)
+        border: 1px solid var(--border-color)
+    }
+
+    .obj-section table thead{
+        background-color: var(--border-color);
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+        color: white;
     }
 
         .obj-section table tr {
@@ -297,18 +305,13 @@ body {
             border-right: 0px;
         }
 
+        .obj-section table tbody tr:nth-child(2n+1){
+            background-color: var(--bg2-color);
+        }
+
             .obj-section table tr td {
                 padding: 5px 5px 5px 5px;
             }
-
-
-    .obj-section thead th {
-        font-size: 18px;
-        font-weight: bold;
-        text-align: left;
-        color: white;
-        background-color: #555555;
-    }
 
 .obj-section-icon {
     width: 25px;

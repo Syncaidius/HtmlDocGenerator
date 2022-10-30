@@ -39,6 +39,9 @@
     <None Update="Source\img\constructor.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Source\img\enum.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Source\img\event.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

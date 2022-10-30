@@ -92,19 +92,20 @@ class BaseLoader {
 
 
             elPage.append(`
-                <table class="obj-section">
-                    <thead>
-                        <tr>
-                            <th colspan="100%">${title}</th>
-                        </tr>
-                        <tr>
-                            <th width="20px">&nbsp</th>
-                            <th width="30%">Name</th>
-                            <th>Summary</th>
-                        </tr>
-                    </thead>
-                    <tbody>${memberHtml}</tbody>
-                </table>
+                <div class="obj-section">
+                    <h2>${title}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                            <tr>
+                                <th width="20px">&nbsp</th>
+                                <th width="30%">Name</th>
+                                <th>Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody>${memberHtml}</tbody>
+                    </table>
+                </div>
                 `);
         }
     }
