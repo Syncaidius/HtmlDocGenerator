@@ -157,6 +157,9 @@ function sortStrings(a, b) {
 }
 
 function getNode(nodePath) {
+    if (nodePath == null || nodePath.length == 0)
+        return null;
+
     let parts = nodePath.split(".");
 
     let node = docData;

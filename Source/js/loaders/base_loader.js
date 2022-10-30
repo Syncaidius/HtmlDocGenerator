@@ -35,10 +35,14 @@ class BaseLoader {
         });
 
         let iconHtml = getIcon(dataNode);
+        let inheritHtml = this.buildInheritChainHtml(dataNode);
+        if (inheritHtml != null && inheritHtml.length > 0)
+            inheritHtml = ` - Inherits: ${inheritHtml}`;
+
         elPage.append(`
             <div class="page-header">
                 <div class="page-title">${iconHtml}<span id="page-title-span">${pathHtml}</span></div>
-                <div class="page-type">${dataNode.DocType}</div>
+                <div class="page-info"><span class="page-inherit">${dataNode.DocType}${inheritHtml}</span></div>
             </div>
         `);
             
@@ -57,6 +61,10 @@ class BaseLoader {
         return `<a class="doc-target ${(extraClasses || "")}" data-target="${targetPath}" data-target-sec="${memberName}">${title}</a>`;
     }
 
+    getDocInvalid(title) {
+        return `<b class="doc-invalid" title="Invalid object name">${title}</b>`;
+    }
+
     buildMemberSection(elPage, dataNode, docPath, docTypeFilter) {
         if (dataNode.Members == null || dataNode.Members.length == 0)
             return;
@@ -64,8 +72,6 @@ class BaseLoader {
         let title = toPlural(docTypeFilter);
         let filtered = this.filterMembers(dataNode, docTypeFilter);
         if (filtered.length > 0) {
-            // TODO support method/constructor/delegate doc types
-
             let memberHtml = "";
 
             filtered.forEach((mName, index) => {
@@ -77,7 +83,7 @@ class BaseLoader {
                     let icon = getIcon(member);
 
                     let docTarget = this.getDocTarget(targetPath, mName, mName);
-                    if (member.DocType == "Method")
+                    if (member.DocType == "Method" || member.DocType == "Constructor")
                         docTarget += this.buildParameterHtml(member);
 
                     memberHtml += `
@@ -108,6 +114,37 @@ class BaseLoader {
                 </div>
                 `);
         }
+    }
+
+    buildInheritChainHtml(dataNode) {
+        if (dataNode.BaseTypeName == null)
+            return "";
+
+        let html = "";
+        let basePath = dataNode.BaseTypeName;
+        let baseNode = getNode(basePath);
+        if (baseNode == null)
+            return;
+
+        let first = true;
+        while (baseNode != null) {
+            if (first == false)
+                html = ' \u25B6 ' + html;
+
+            first = false;
+
+            let title = getPathTitle(basePath);
+            html = this.getDocTarget(basePath, "", title) + html;
+
+            // Get next base node
+            basePath = baseNode.BaseTypeName;
+            baseNode = getNode(basePath);
+        }
+
+        if(first == true)
+            html = this.getDocInvalid(title);
+
+        return html;
     }
 
     buildParameterHtml(dataNode) {

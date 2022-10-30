@@ -5,6 +5,7 @@
     --bg2-color: #444444;
     --border-color: #555555;
     --grey-color: #999999;
+    --grey-light-color: #DDDDDD;
 }
 
 body {
@@ -209,6 +210,21 @@ body {
 }
 
 .page-title .doc-target:hover{
+    text-decoration: underline;
+    text-decoration-color: var(--main-color);
+    text-underline-offset: 6px;
+}
+
+.page-info {
+    color: var(--grey-color);
+}
+
+.page-info .doc-target{
+    color:var(--grey-light-color);
+}
+
+.page-inherit .doc-target:hover {
+    color: white;
     text-decoration: underline;
     text-decoration-color: var(--main-color);
     text-underline-offset: 6px;
