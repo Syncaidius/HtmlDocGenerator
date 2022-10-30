@@ -53,8 +53,8 @@ class BaseLoader {
         return docPath.split(".");
     }
 
-    getDocTarget(targetPath, memberName, title) {
-        return `<a class="doc-target plain" data-target="${targetPath}" data-target-sec="${memberName}">${title}</a>`;
+    getDocTarget(targetPath, memberName, title, extraClasses = null) {
+        return `<a class="doc-target ${(extraClasses || "")}" data-target="${targetPath}" data-target-sec="${memberName}">${title}</a>`;
     }
 
     buildMemberSection(elPage, dataNode, docPath, docTypeFilter) {
@@ -64,7 +64,6 @@ class BaseLoader {
         let title = toPlural(docTypeFilter);
         let filtered = this.filterMembers(dataNode, docTypeFilter);
         if (filtered.length > 0) {
-            console.log(`Building section showing ${filtered.length} ${title} members`);
             // TODO support method/constructor/delegate doc types
 
             let memberHtml = "";
@@ -77,10 +76,14 @@ class BaseLoader {
                     let summary = member.Summary != null ? member.Summary : "&nbsp;";
                     let icon = getIcon(member);
 
+                    let docTarget = this.getDocTarget(targetPath, mName, mName);
+                    if (member.DocType == "Method")
+                        docTarget += this.buildParameterHtml(member);
+
                     memberHtml += `
                     <tr>
                         <td>${icon}</td>
-                        <td>${this.getDocTarget(targetPath, mName, mName)}</td>
+                        <td><span>${docTarget}</span></td>
                         <td>${summary}</td>
                     </tr>
                 `;
@@ -104,6 +107,23 @@ class BaseLoader {
                 </table>
                 `);
         }
+    }
+
+    buildParameterHtml(dataNode) {
+        if (dataNode.Parameters == null || dataNode.Parameters.length == 0)
+            return "()";
+
+        let html = "";
+        dataNode.Parameters.forEach((pNode, index) => {
+            let pType = this.getPathParts(pNode.TypeName);
+            let pTitle = pType[pType.length - 1];
+
+            if (index > 0)
+                html += ", ";
+            html += this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, "doc-parameter");
+        });
+
+        return `(${html})`;
     }
 
     filterMembers(dataNode, docTypeFilter) {

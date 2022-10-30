@@ -1,6 +1,8 @@
 ﻿:root {
     --main-color: #dc5c0f;
+    --main-highlight: #fe7e2f;
     --bg-color: #333333;
+    --scroll-color: #999999;
 }
 
 body {
@@ -11,6 +13,7 @@ body {
     height: 100%;
     margin: 0px;
     min-height: 100%;
+    overflow:hidden;
 }
 
     body h2 {
@@ -30,13 +33,34 @@ body {
     aspect-ratio: auto;
 }
 
+.scrollable {
+    overflow: scroll;
+    scrollbar-color: var(--scroll-color) var(--main-color);
+}
+
+    .scrollable::-webkit-scrollbar {
+        color: var(--bg-color);
+        background-color: var(--bg-color);
+        width: 8px;
+    }
+
+    .scrollable::-webkit-scrollbar-thumb {
+        background: var(--scroll-color);
+        border-radius: 5px;
+    }
+
+        .scrollable::-webkit-scrollbar-thumb:hover {
+            background: var(--main-color);
+        }
+
 .sec-page {
     width: 100%;
     margin-top: 20px;
     margin-left: 20px;
-    display:flex;
-    flex-direction:column;
+    display: flex;
+    flex-direction: column;
 }
+
 
 .sec-page table {
     border-collapse: collapse;
@@ -54,7 +78,6 @@ body {
 .sec-index {
     padding: 0px 0px 0px 0px;
     margin-top: auto;
-    border: 2px solid white;
     display: block;
     width: 500px;
     overflow-y: scroll;
@@ -137,6 +160,11 @@ body {
 .doc-target:hover {
     cursor: pointer;
     color: var(--main-color);
+}
+
+.doc-parameter {
+    color: #AAAAAA;
+    font-style: italic;
 }
 
 .doc-target a{
@@ -297,9 +325,4 @@ body {
 .obj-parenthesis {
     font-style: normal;
     color: var(--main-color);
-}
-
-.obj-parameter {
-    font-style: normal;
-    color: #CCCCCC;
 }
