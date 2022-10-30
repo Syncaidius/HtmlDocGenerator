@@ -353,7 +353,7 @@ namespace HtmlDocGenerator
                             summary = $"<b class=\"{context.Css.Target}\" data-type=\"{refObj.Namespace}.{refObj.Name}\">{refObj.Name}</b>";
                                 }
                         else if (mType == DocObjectType.Invalid)
-                            summary = $"<b class=\"${context.Css.Invalid}\" title=\"Invalid object name\">{mName}</b>";
+                            summary = $"<b class=\"{context.Css.Invalid}\" title=\"Invalid object name\">{mName}</b>";
                     }
                     break;
 

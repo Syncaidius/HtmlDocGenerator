@@ -142,7 +142,8 @@ function toHtml(str) {
 }
 
 function getIcon(docNode) {
-    return `<img class="doc-icon" src="img/${docNode.DocType.toLowerCase()}.png" title="${docNode.DocType }"/>`;
+    return `<img class="doc-icon" src="img/${docNode.DocType.toLowerCase()}.png" title="${docNode.DocType}"
+/>`;
 }
 
 function sortStrings(a, b) {
