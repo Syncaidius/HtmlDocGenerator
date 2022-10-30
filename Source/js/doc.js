@@ -142,7 +142,7 @@ function toHtml(str) {
 }
 
 function getIcon(docNode) {
-    return `<img src="img/${docNode.DocType.toLowerCase()}.png"/>`;
+    return `<img class="doc-icon" src="img/${docNode.DocType.toLowerCase()}.png" title="${docNode.DocType }"/>`;
 }
 
 function sortStrings(a, b) {
@@ -216,7 +216,6 @@ $(document).ready(function () {
                 this.parentElement.querySelector(".sec-namespace-inner").classList.toggle("sec-active");
                 this.classList.toggle("namespace-toggle-down");
 
-                console.log(`this parent: ${this.id}`)
                 let target = $(this);
                 loadPage(target);
             }

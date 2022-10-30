@@ -1,12 +1,10 @@
 
 class NamespaceLoader extends BaseLoader {
-    loadContent(dataNode, docPath) {
-        // TODO list all members of a namespace: classes, structs, enums and interfaces. Are delegates sparate?
-    }
-
-    loadSection(title, members, isMethods) {
-        // TODO display table with "name" and "summary" columns
-        // TODO sort alphabetically
-        // TODO if isMethods is true, add () and parameter list to "name" column
+    loadContent(elPage, dataNode, docPath) {
+        this.buildMemberSection(elPage, dataNode, docPath, "Namespace");
+        this.buildMemberSection(elPage, dataNode, docPath, "Class");
+        this.buildMemberSection(elPage, dataNode, docPath, "Struct");
+        this.buildMemberSection(elPage, dataNode, docPath, "Interface");
+        this.buildMemberSection(elPage, dataNode, docPath, "Enum");
     }
 }

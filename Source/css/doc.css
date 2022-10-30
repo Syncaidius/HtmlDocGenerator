@@ -42,10 +42,6 @@ body {
     border-collapse: collapse;
 }
 
-tr {
-    border: 1px solid var(--main-color);
-}
-
 .sec-main {
     display: flex;
     flex-direction: row;
@@ -242,19 +238,27 @@ tr {
 }
 
 .obj-section {
+
     background-color: #333333;
     font-size: 14px;
     font-weight: normal;
+    max-width: 800px;
+    margin-top: 25px;
 }
 
+    .obj-section .doc-icon {
+        width: 16px;
+        vertical-align: middle;
+        padding-right: 10px;
+    }
+
     .obj-section table {
-        border: 1px solid #555555;
         min-width: 100%;
         border-collapse: collapse;
+        border: 1px solid var(--main-color)
     }
 
         .obj-section table tr {
-            border: 1px solid #555555;
             border-left: 0px;
             border-right: 0px;
         }
@@ -262,6 +266,7 @@ tr {
             .obj-section table tr td {
                 padding: 5px 5px 5px 5px;
             }
+
 
     .obj-section thead th {
         font-size: 18px;
