@@ -1,5 +1,11 @@
 
 class BaseLoader {
+    manager = null;
+
+    constructor(docManager) {
+        this.manager = docManager;
+    }
+
     /* elPageName = The name of the element that will contain help page content.
      * title = The title of the loaded page
      * dataNode = The docData node that contains the information we need to display on the page.
@@ -32,8 +38,8 @@ class BaseLoader {
             };
         });
 
-        let iconHtml = getIcon(dataNode);
-        let summary = dataNode.Summary != null ? dataNode.Summary : "No summary.";
+        let iconHtml = this.manager.getIcon(dataNode);
+        let summary = dataNode.Summary != null && dataNode.Summary.length > 0 ? dataNode.Summary : "No summary.";
 
         let inheritHtml = this.buildInheritChainHtml(dataNode);
         if (inheritHtml != null && inheritHtml.length > 0)
@@ -47,12 +53,12 @@ class BaseLoader {
             <div id="${elPageName}-inner" class="scrollable sec-content"></div>
         `);
 
+        this.manager.registerDocTargets(elPage);
         elPage = $(`#${elPageName}-inner`);
-        elPage.append(`<div class="obj-summary"><p>${summary}</p>`)
-            
+        elPage.append(`<div class="obj-summary"><p>${summary}</p>`);           
 
         this.loadContent(elPage, dataNode, docPath);
-        registerDocTargets(elPage);
+        this.manager.registerDocTargets(elPage);
     }
 
     loadContent(elPage, dataNode, docPath) { }
@@ -73,7 +79,8 @@ class BaseLoader {
         if (dataNode.Members == null || dataNode.Members.length == 0)
             return;
 
-        let title = toPlural(docTypeFilter);
+        let thisLoader = this;
+        let title = this.manager.toPlural(docTypeFilter);
         let filtered = this.filterMembers(dataNode, docTypeFilter);
         if (filtered.length > 0) {
             let memberHtml = "";
@@ -84,7 +91,7 @@ class BaseLoader {
                     let member = memberVariants[i];
                     let targetPath = `${docPath}.${mName}`;
                     let summary = member.Summary != null ? member.Summary : "&nbsp;";
-                    let icon = getIcon(member);
+                    let icon = thisLoader.manager.getIcon(member);
 
                     let docTarget = this.getDocTarget(targetPath, mName, mName);
                     if (member.DocType == "Method" || member.DocType == "Constructor")
@@ -126,7 +133,7 @@ class BaseLoader {
 
         let html = "";
         let basePath = dataNode.BaseTypeName;
-        let baseNode = getNode(basePath);
+        let baseNode = this.manager.getNode(basePath);
         if (baseNode == null)
             return;
 
@@ -137,12 +144,12 @@ class BaseLoader {
 
             first = false;
 
-            let title = getPathTitle(basePath);
+            let title = this.manager.getPathTitle(basePath);
             html = this.getDocTarget(basePath, "", title) + html;
 
             // Get next base node
             basePath = baseNode.BaseTypeName;
-            baseNode = getNode(basePath);
+            baseNode = this.manager.getNode(basePath);
         }
 
         if(first == true)
