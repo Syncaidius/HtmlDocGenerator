@@ -97,10 +97,13 @@ namespace HtmlDocGenerator
 
         private void AddMember(DocMember member)
         {
-            if (!Members.TryGetValue(member.Name, out List<DocElement> memList))
+            string name = member.BaseInfo.MemberType == MemberTypes.Constructor ? 
+                Name : member.BaseInfo.Name;
+
+            if (!Members.TryGetValue(name, out List<DocElement> memList))
             {
                 memList = new List<DocElement>();
-                Members.Add(member.Name, memList);
+                Members.Add(name, memList);
             }
 
             memList.Add(member);
