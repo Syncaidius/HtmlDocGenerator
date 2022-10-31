@@ -12,8 +12,6 @@ class BaseLoader {
             return;
         }
 
-        elPage.html("");
-
         let pathParts = this.getPathParts(docPath);
         let lastPart = pathParts.length - 1;
         let pathHtml = "";
@@ -39,12 +37,15 @@ class BaseLoader {
         if (inheritHtml != null && inheritHtml.length > 0)
             inheritHtml = ` - Inherits: ${inheritHtml}`;
 
-        elPage.append(`
+        elPage.html(`
             <div class="page-header">
                 <div class="page-title">${iconHtml}<span id="page-title-span">${pathHtml}</span></div>
                 <div class="page-info"><span class="page-inherit">${dataNode.DocType}${inheritHtml}</span></div>
             </div>
+            <div id="${elPageName}-inner" class="scrollable sec-content"></div>
         `);
+
+        elPage = $(`#${elPageName}-inner`);
             
 
         this.loadContent(elPage, dataNode, docPath);
