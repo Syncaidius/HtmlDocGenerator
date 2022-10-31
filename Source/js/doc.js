@@ -208,6 +208,7 @@ $(document).ready(function () {
     loaders["Interface"] = loaders["Class"];
     loaders["Enum"] = loaders["Class"];
     loaders["Namespace"] = new NamespaceLoader();
+    loaders["Method"] = new MethodLoader();
 
     populateIndex();
 

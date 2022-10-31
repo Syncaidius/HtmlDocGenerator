@@ -33,6 +33,8 @@ class BaseLoader {
         });
 
         let iconHtml = getIcon(dataNode);
+        let summary = dataNode.Summary != null ? dataNode.Summary : "No summary.";
+
         let inheritHtml = this.buildInheritChainHtml(dataNode);
         if (inheritHtml != null && inheritHtml.length > 0)
             inheritHtml = ` - Inherits: ${inheritHtml}`;
@@ -46,7 +48,7 @@ class BaseLoader {
         `);
 
         elPage = $(`#${elPageName}-inner`);
-        elPage.append(`<div class="obj-summary"><p>${dataNode.Summary}</p>`)
+        elPage.append(`<div class="obj-summary"><p>${summary}</p>`)
             
 
         this.loadContent(elPage, dataNode, docPath);

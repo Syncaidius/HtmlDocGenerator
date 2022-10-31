@@ -75,6 +75,9 @@
     <None Update="Source\js\loaders\namespace.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Source\js\loaders\method.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Source\js\loaders\object.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

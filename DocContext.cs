@@ -76,9 +76,6 @@ namespace HtmlDocGenerator
                 XmlNode dest = cfg["destination"];
                 XmlNode defs = cfg["definitions"];
                 XmlNode nuget = cfg["nuget"];
-                XmlNode scripts = cfg["scripts"];
-                XmlNode summary = cfg["summary"];
-                XmlNode icons = cfg["icons"];
                 XmlNode intro = cfg["intro"];
                 XmlNode source = cfg["source"];
                 XmlNode css = cfg["css"];
@@ -142,28 +139,6 @@ namespace HtmlDocGenerator
             }
 
             return cxt;
-        }
-
-        private string LoadTemplate(XmlNode pathNode)
-        {
-            if (pathNode != null)
-            {
-                string objPath = $"{DestinationPath}{pathNode.InnerText}";
-                if (File.Exists(objPath))
-                {
-                    using (FileStream stream = new FileStream(objPath, FileMode.Open, FileAccess.Read))
-                    {
-                        using (StreamReader reader = new StreamReader(stream))
-                            return reader.ReadToEnd();
-                    }
-                }
-                else
-                {
-                    Log($"Template not found: {objPath}");
-                }
-            }
-
-            return null;
         }
 
         public void Log(string message)
