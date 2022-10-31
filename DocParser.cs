@@ -15,6 +15,7 @@ namespace HtmlDocGenerator
 {
     public class DocParser
     {
+        Regex _regexHttp = new Regex("(\\b(http|ftp|https):(\\/\\/|\\\\\\\\)[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&:/~\\+#]*[\\w\\-\\@?^=%&/~\\+#])?|\\bwww\\.[^\\s])");
         Dictionary<char, DocObjectType> _typeKeys = new Dictionary<char, DocObjectType>()
         {
             ['T'] = DocObjectType.ObjectType,
@@ -331,6 +332,15 @@ namespace HtmlDocGenerator
                 }
 
                 cPrev = c;
+            }
+
+            // Add anchor tags to URLs
+            Match mUrl = _regexHttp.Match(summary);
+            while (mUrl.Success)
+            {
+                string anchor = $"<a target=\"_blank\" href=\"{mUrl.Value}\">{mUrl.Value}</a>";
+                summary = summary.Replace(mUrl.Value, anchor);
+                mUrl = _regexHttp.Match(summary, mUrl.Index + anchor.Length);
             }
 
             return summary;

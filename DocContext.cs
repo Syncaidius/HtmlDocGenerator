@@ -13,14 +13,9 @@ namespace HtmlDocGenerator
     [JsonObject(MemberSerialization.OptIn)]
     public class DocContext : DocElement
     {
-        public DocContext(string name) : 
+        public DocContext(string name) :
             base(name, DocObjectType.Namespace)
-        {
-
-        }
-
-        [JsonProperty]
-        public string Intro { get; set; }
+        { }
 
         public class CssConfig
         {
@@ -29,15 +24,8 @@ namespace HtmlDocGenerator
             public string Invalid { get; set; } = "doc-invalid";
         }
 
-        public class SummaryConfig
-        {
-            public int MaxLength { get; set; } = 300;
-
-            /// <summary>
-            /// Gets or sets the 'read more' text.
-            /// </summary>
-            public string ReadMore { get; set; } = "Read More";
-        }
+        [JsonProperty]
+        public string Intro { get; set; }
 
         public string DestinationPath { get; set; } = "docs\\"; 
         
@@ -45,13 +33,18 @@ namespace HtmlDocGenerator
 
         public List<string> Definitions { get; } = new List<string>();
 
-        public List<string> Scripts { get; } = new List<string>();
-
         public Dictionary<string, DocAssembly> Assemblies { get; } = new Dictionary<string, DocAssembly>();
 
         public List<NugetDefinition> Packages { get; } = new List<NugetDefinition>();
 
         public Dictionary<string, DocObject> ObjectsByQualifiedName { get; } = new Dictionary<string, DocObject>();
+
+        [JsonProperty]
+        public override string Name
+        {
+            get => base.Name;
+            set => base.Name = value;
+        }
 
         public CssConfig Css { get; } = new CssConfig()
         {
@@ -146,12 +139,6 @@ namespace HtmlDocGenerator
                     if (docInvalid != null)
                         cxt.Css.Invalid = docInvalid.InnerText;
                 }
-
-                if (scripts != null)
-                {
-                    foreach (XmlNode iNode in scripts.ChildNodes)
-                        cxt.Scripts.Add(iNode.InnerText);
-                }
             }
 
             return cxt;
@@ -190,16 +177,6 @@ namespace HtmlDocGenerator
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"ERROR: {message}");
             Console.ForegroundColor = pCol;
-        }
-
-        /// <summary>
-        /// Converts a string into a safe file name.
-        /// </summary>
-        /// <param name="text">The text to be converted into a file-name.</param>
-        /// <returns></returns>
-        public string GetFileName(string text)
-        {
-            return text.Replace('<', '_').Replace('>', '_').Replace('.', '_'); 
         }
 
         public DocObject CreateObject(Type type)
@@ -243,13 +220,6 @@ namespace HtmlDocGenerator
             string qualifiedName = $"{ns}.{objName}";
             ObjectsByQualifiedName.TryGetValue(qualifiedName, out DocObject obj);
             return obj;
-        }
-
-        [JsonProperty]
-        public override string Name
-        {
-            get => base.Name;
-            set => base.Name = value;
         }
     }
 }
