@@ -338,7 +338,7 @@ namespace HtmlDocGenerator
             Match mUrl = _regexHttp.Match(summary);
             while (mUrl.Success)
             {
-                string anchor = $"<a target=\"_blank\" href=\"{mUrl.Value}\">{mUrl.Value}</a>";
+                string anchor = $"<a class=\"url\" target=\"_blank\" href=\"{mUrl.Value}\">{mUrl.Value}</a>";
                 summary = summary.Replace(mUrl.Value, anchor);
                 mUrl = _regexHttp.Match(summary, mUrl.Index + anchor.Length);
             }

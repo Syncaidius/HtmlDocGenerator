@@ -32,6 +32,15 @@ body {
     aspect-ratio: auto;
 }
 
+.url{
+    color: var(--main-color);
+    text-decoration: none;
+}
+
+.url:hover{
+    color: var(--main-highlight);
+}
+
 .scrollable {
     overflow: scroll;
     scrollbar-color: var(--grey-color) var(--main-color);

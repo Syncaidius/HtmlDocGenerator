@@ -46,6 +46,7 @@ class BaseLoader {
         `);
 
         elPage = $(`#${elPageName}-inner`);
+        elPage.append(`<div class="obj-summary"><p>${dataNode.Summary}</p>`)
             
 
         this.loadContent(elPage, dataNode, docPath);
