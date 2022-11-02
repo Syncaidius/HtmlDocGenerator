@@ -129,6 +129,10 @@ class BaseLoader {
         }
     }
 
+    buildRemarkSection(elPage, dataNode) {
+
+    }
+
     buildInheritChainHtml(dataNode) {
         if (dataNode.BaseTypeName == null)
             return "";
@@ -169,9 +173,17 @@ class BaseLoader {
             let pType = this.getPathParts(pNode.TypeName);
             let pTitle = pType[pType.length - 1];
 
+            let refKeyword = "";
+            if (pTitle.endsWith("&")) {
+                refKeyword = `<b class="keyword">ref</b> `;
+                pTitle = pTitle.substr(0, pTitle.length - 1);
+            }
+
             if (index > 0)
                 html += ", ";
-            html += this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, "doc-parameter");
+
+            let docTarget = this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, "doc-parameter");
+            html += `${refKeyword}${docTarget}`;
         });
 
         return `(${html})`;

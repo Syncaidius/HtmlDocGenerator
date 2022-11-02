@@ -38,6 +38,11 @@ body {
     text-decoration: none;
 }
 
+.keyword{
+    color: #47aedc;
+    font-weight:normal;
+}
+
 .url:hover{
     color: var(--main-highlight);
 }
