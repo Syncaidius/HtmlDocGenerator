@@ -1,6 +1,7 @@
 ﻿:root {
     --main-color: #dc5c0f;
     --main-highlight: #fe7e2f;
+    --main-selected: rgba(145,97,12,1);
     --bg-color: #333333;
     --bg2-color: #444444;
     --border-color: #555555;
@@ -65,9 +66,7 @@ body {
     .scrollable::-webkit-scrollbar-corner,
     .scrollable::-webkit-scrollbar-track {
         background: var(--bg2-color);
-    }
-
-        
+    }     
 
 .sec-page {
     width: 100%;
@@ -155,15 +154,6 @@ body {
     background-color: var(--bg-color);
 }
 
-.namespace-toggle {
-    cursor: pointer;
-    user-select: none; /* Prevent text selection */
-}
-
-.namespace-toggle:hover {
-    color: var(--main-color);
-}
-
 .doc-invalid {
     color: #FF2222;
     font-weight: normal;
@@ -245,17 +235,31 @@ body {
     text-underline-offset: 6px;
 }
 
+.index-toggle {
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+    width: 80%;
+    display:inline-block;
+}
+    .index-toggle:hover {
+        color: var(--main-color);
+    }
+
 /* Create the caret/arrow with a unicode, and style it */
-.namespace-toggle::before {
+.index-toggle::before {
     content: "\25B6";
     color: var(--main-color);
     display: inline-block;
     margin-right: 6px;
 }
 
-.namespace-toggle-down::before {
+.index-toggle-down::before {
     transform: rotate(90deg);
 }
+
+.index-selected {
+    background: linear-gradient(90deg, var(--main-selected) 0%, rgba(51,51,51,0) 100%);
+}   
 
 .sec-div {
     min-height: 5px;

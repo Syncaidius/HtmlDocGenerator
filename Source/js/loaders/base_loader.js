@@ -82,6 +82,8 @@ class BaseLoader {
         let thisLoader = this;
         let title = this.manager.toPlural(docTypeFilter);
         let filtered = this.filterMembers(dataNode, docTypeFilter);
+
+
         if (filtered.length > 0) {
             let memberHtml = "";
 
@@ -188,6 +190,8 @@ class BaseLoader {
                 filtered.push(mName);
 
         });
+
+        filtered = filtered.sort(this.sortStrings);
 
         return filtered;
     }

@@ -4,6 +4,7 @@ class DocManager {
     objTypes = ["Class", "Struct", "Enum", "Interface"];
     loaders = {};
     data = null;
+    selected = null;
 
     constructor(srcData) {
         this.data = srcData;
@@ -64,7 +65,7 @@ class DocManager {
         let idName = this.toIDName(curPath);
         let dataTarget = empty == true ? "" : `data-target="${curPath}"`;
         el.append(`<div id="i-${idName}" class="sec-namespace${(treePath.length > 1 ? "-noleft" : "")}">
-                    <span class="namespace-toggle\" ${dataTarget}>${title}</span><br/>
+                    <span class="index-toggle\" ${dataTarget}>${title}</span><br/>
                     <div id="in-${idName}" class="sec-namespace-inner"></div>
                 </div>`);
 
@@ -231,17 +232,23 @@ $(document).ready(function () {
 
     manager.populateIndex();
 
-    let toggler = document.getElementsByClassName("namespace-toggle");
+    let toggler = document.getElementsByClassName("index-toggle");
     let i;
 
     for (i = 0; i < toggler.length; i++) {
         toggler[i].addEventListener("click", function () {
             {
                 this.parentElement.querySelector(".sec-namespace-inner").classList.toggle("sec-active");
-                this.classList.toggle("namespace-toggle-down");
+                this.classList.toggle("index-toggle-down");
 
                 let target = $(this);
                 manager.loadPage(target);
+
+                if (manager.selected != null)
+                    manager.selected.classList.toggle("index-selected");
+
+                this.classList.toggle("index-selected");
+                manager.selected = this;
             }
         });
     }
