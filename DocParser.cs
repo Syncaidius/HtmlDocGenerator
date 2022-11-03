@@ -360,7 +360,7 @@ namespace HtmlDocGenerator
                     {
                         DocElement refObj = ParseXmlName(context, attCRef.Value, out DocObjectType mType, out string mName);
                         if (refObj != null) { 
-                            summary = $"<a class=\"{context.Css.Target}\" data-target=\"{refObj.Namespace}\" data-target-sec=\"{refObj.Name}\">{refObj.Name}</a>";
+                            summary = $"<a class=\"{context.Css.Target}\" data-target=\"{refObj.Namespace}.{refObj.Name}\">{refObj.Name}</a>";
                                 }
                         else if (mType == DocObjectType.Invalid)
                             summary = $"<b class=\"{context.Css.Invalid}\" title=\"Invalid object name\">{mName}</b>";

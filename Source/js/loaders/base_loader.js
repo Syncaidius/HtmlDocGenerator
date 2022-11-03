@@ -67,8 +67,18 @@ class BaseLoader {
         return docPath.split(".");
     }
 
-    getDocTarget(targetPath, memberName, title, extraClasses = null) {
-        return `<a class="doc-target ${(extraClasses || "")}" data-target="${targetPath}" data-target-sec="${memberName}">${title}</a>`;
+    /* targetPath = The target tree path
+     * memberName = The member of the target path to navigate to. e.g. a method name.
+     * title = The text displayed in place of the doc-target link.
+     * extraClasses = Extra css classes to apply to the target html.
+     * targetIndex = The variant/member index of given memberName. e.g. a method overload ID.
+     */
+    getDocTarget(targetPath, memberName, title, targetIndex = 0, extraClasses = null) {
+        let targetID = "";
+        if (targetIndex != null && targetIndex > 0)
+            targetID = ` data-target-id="${targetIndex}"`;
+
+        return `<a class="doc-target ${(extraClasses || "")}" data-target="${targetPath}"${targetID}>${title}</a>`;
     }
 
     getDocInvalid(title) {
@@ -95,7 +105,7 @@ class BaseLoader {
                     let summary = member.Summary != null ? member.Summary : "&nbsp;";
                     let icon = thisLoader.manager.getIcon(member);
 
-                    let docTarget = this.getDocTarget(targetPath, mName, mName);
+                    let docTarget = this.getDocTarget(targetPath, mName, mName, i);
                     if (member.DocType == "Method" || member.DocType == "Constructor")
                         docTarget += this.buildParameterHtml(member);
 
@@ -118,7 +128,7 @@ class BaseLoader {
                             <tr>
                             <tr>
                                 <th width="20px">&nbsp</th>
-                                <th width="30%">Name</th>
+                                <th width="35%">Name</th>
                                 <th>Summary</th>
                             </tr>
                         </thead>
@@ -173,17 +183,18 @@ class BaseLoader {
             let pType = this.getPathParts(pNode.TypeName);
             let pTitle = pType[pType.length - 1];
 
-            let refKeyword = "";
-            if (pTitle.endsWith("&")) {
-                refKeyword = `<b class="keyword">ref</b> `;
-                pTitle = pTitle.substr(0, pTitle.length - 1);
+            let keyword = "";
+
+            if (pNode.Keyword != null) {
+                keyword = pNode.Keyword.toLowerCase();
+                keyword = `<b class="keyword">${keyword}</b> `;
             }
 
             if (index > 0)
                 html += ", ";
 
-            let docTarget = this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, "doc-parameter");
-            html += `${refKeyword}${docTarget}`;
+            let docTarget = this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, 0, "doc-parameter");
+            html += `${keyword}${docTarget}`;
         });
 
         return `(${html})`;

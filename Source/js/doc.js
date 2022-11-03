@@ -39,7 +39,7 @@ class DocManager {
         let targetName = this.toIDName(title);
 
         let iconHtml = this.getIcon(dataNode);
-        el.append(` <div id="t-${idName}" class="doc-target" data-target="${parentPath}" data-target-sec="${targetName}">
+        el.append(` <div id="t-${idName}" class="doc-target" data-target="${parentPath}">
                     ${iconHtml}
                     <a>${title}</a>
                 </div>`);
@@ -174,7 +174,7 @@ class DocManager {
         return 0;
     }
 
-    getNode(nodePath) {
+    getNode(nodePath, nodeIndex = 0) {
         if (nodePath == null || nodePath.length == 0)
             return null;
 
@@ -184,8 +184,9 @@ class DocManager {
         parts.forEach((p, index) => {
             let next = node.Members[p];
 
-            if (next != null && next.length > 0)
-                node = next[0];
+            let nextIndex = index == parts.length - 1 ? nodeIndex : 0;
+            if (next != null && next.length > nextIndex)
+                node = next[nextIndex];
         });
 
         return node;
@@ -198,10 +199,12 @@ class DocManager {
 
     loadPage(target) {
         let nodePath = target.data("target");
+        let pathID = target.data("target-id") || 0;
+
         if (nodePath == null)
             return;
 
-        let node = this.getNode(nodePath);
+        let node = this.getNode(nodePath, pathID);
         let loader = this.loaders[node.DocType];
 
         if (loader == null) {

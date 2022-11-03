@@ -7,7 +7,7 @@ class MethodLoader extends BaseLoader {
         if (dataNode.Parameters == null || dataNode.Parameters.length == 0)
             return;
 
-        dataNode.Parameters.Parameters.forEach((pNode, index) => {
+        dataNode.Parameters.forEach((pNode, index) => {
             let typeName = this.manager.getNode(pNode.TypeName);
             let typeTitle = this.manager.getPathTitle(pNode.TypeName);
             let typeTarget = "";
