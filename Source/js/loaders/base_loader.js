@@ -58,6 +58,8 @@ class BaseLoader {
         elPage.append(`<div class="obj-summary"><p>${summary}</p>`);           
 
         this.loadContent(elPage, dataNode, docPath);
+        this.buildRemarkSection(elPage, dataNode);
+
         this.manager.registerDocTargets(elPage);
     }
 
@@ -140,7 +142,26 @@ class BaseLoader {
     }
 
     buildRemarkSection(elPage, dataNode) {
+        if (dataNode.Remark == null)
+            return;
 
+        elPage.append(`
+            <div class="obj-section">
+                <h2>Remarks</h2>
+                <p>${dataNode.Remark}</p>
+            </div>
+            `);
+    }
+
+    getParameterKeyword(paramNode) {
+        let keyword = "";
+
+        if (paramNode.Keyword != null) {
+            keyword = paramNode.Keyword.toLowerCase();
+            keyword = `<b class="keyword">${keyword}</b> `;
+        }
+
+        return keyword;
     }
 
     buildInheritChainHtml(dataNode) {
@@ -182,13 +203,7 @@ class BaseLoader {
         dataNode.Parameters.forEach((pNode, index) => {
             let pType = this.getPathParts(pNode.TypeName);
             let pTitle = pType[pType.length - 1];
-
-            let keyword = "";
-
-            if (pNode.Keyword != null) {
-                keyword = pNode.Keyword.toLowerCase();
-                keyword = `<b class="keyword">${keyword}</b> `;
-            }
+            let keyword = this.getParameterKeyword(pNode);
 
             if (index > 0)
                 html += ", ";

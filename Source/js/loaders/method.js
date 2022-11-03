@@ -18,11 +18,12 @@ class MethodLoader extends BaseLoader {
                 typeTarget = this.getDocInvalid(pNode.TypeName);
 
             let summary = pNode.Summary != null ? pNode.Summary : "&nbsp";
+            let keywords = this.getParameterKeyword(pNode);
 
             paramHtml += `
             <tr>
                 <td></td>
-                <td>${pNode.Name}</td>
+                <td>${keywords}${pNode.Name}</td>
                 <td>${typeTarget}</td>
                 <td>${summary}</td>
             </tr>`;
