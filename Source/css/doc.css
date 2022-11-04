@@ -43,6 +43,23 @@ body {
     font-weight:normal;
 }
 
+.code{
+
+}
+
+.code .doc-target{
+    color: var(--main-color);
+}
+
+.code .doc-parameter{
+    color: #AAAAAA;
+    font-style: italic;
+}
+
+.code .doc-target:hover{
+    color: var(--main-highlight);
+}
+
 .url:hover{
     color: var(--main-highlight);
 }

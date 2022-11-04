@@ -65,8 +65,14 @@ class BaseLoader {
 
     loadContent(elPage, dataNode, docPath) { }
 
-    getPathParts(docPath,) {
+    getPathParts(docPath) {
         return docPath.split(".");
+    }
+
+    getParentPath(docPath) {
+        let parts = this.getPathParts(docPath);
+        parts.pop();
+        return parts.join('.');
     }
 
     /* targetPath = The target tree path
