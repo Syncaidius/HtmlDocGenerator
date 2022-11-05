@@ -13,7 +13,13 @@ namespace HtmlDocGenerator
     {
         Type _type;
 
-        public DocObject(string name) : base(name, DocObjectType.ObjectType) { }
+        public DocObject(Type type, string name) : base(name, DocObjectType.ObjectType)
+        {
+            IsAbstract = type.IsAbstract ? true : null;
+
+            if (type.IsClass && type.IsAbstract && type.IsSealed)
+                    IsStatic = true;            
+        }
 
         public DocMember GetMember<T>(string name, Type[] parameters = null, Type[] genericParameters = null)
             where T : DocMember
@@ -43,7 +49,7 @@ namespace HtmlDocGenerator
             else
             {
                 if(_type.BaseType != null)
-                    BaseTypeName = $"{_type.BaseType.Namespace}.{HtmlHelper.GetHtmlName(_type.BaseType)}";
+                    BaseName = $"{_type.BaseType.Namespace}.{HtmlHelper.GetHtmlName(_type.BaseType)}";
 
                 MemberInfo[] members = _type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
@@ -115,7 +121,7 @@ namespace HtmlDocGenerator
         }
 
         [JsonProperty]
-        public string BaseTypeName { get; private set; }
+        public string BaseName { get; private set; }
 
         public Type UnderlyingType
         {

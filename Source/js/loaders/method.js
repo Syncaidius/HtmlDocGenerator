@@ -4,10 +4,12 @@ class MethodLoader extends BaseLoader {
 
         let paramHtml = "";
 
-        if (dataNode.Parameters == null || dataNode.Parameters.length == 0)
+        this.displayMethodCall(elPage, dataNode, docPath);
+
+        if (dataNode.Params == null || dataNode.Params.length == 0)
             return;
 
-        dataNode.Parameters.forEach((pNode, index) => {
+        dataNode.Params.forEach((pNode, index) => {
             let typeName = this.manager.getNode(pNode.TypeName);
             let typeTitle = this.manager.getPathTitle(pNode.TypeName);
             let typeTarget = "";
@@ -46,17 +48,15 @@ class MethodLoader extends BaseLoader {
                 </table>
             </div>
         `);
-
-        this.displayMethodCall(elPage, dataNode, docPath);
     }
 
     displayMethodCall(elPage, dataNode, docPath) {
         let returnCall = "";
-        if (dataNode.ReturnTypeName != null) {
-            let returnNode = this.manager.getNode(dataNode.ReturnTypeName);
-            let returnTypeName = this.manager.getPathTitle(dataNode.ReturnTypeName);
+        if (dataNode.Return != null) {
+            let returnNode = this.manager.getNode(dataNode.Return);
+            let returnName = this.manager.getPathTitle(dataNode.Return);
 
-            let returnTarget = this.getDocTarget(dataNode.ReturnTypeName, "", returnTypeName);
+            let returnTarget = this.getDocTarget(dataNode.Return, "", returnName);
             returnCall = `${returnTarget} result = `;
         }
 
@@ -67,26 +67,25 @@ class MethodLoader extends BaseLoader {
         let parentNode = this.manager.getNode(parentPath);
         let parentTarget = this.getDocTarget(parentPath, "", parentName);
 
-        let parameters = "";
-        if (dataNode.Parameters != null && dataNode.Parameters.length > 0) {
-            dataNode.Parameters.forEach((pNode, index) => {
+        let params = "";
+        if (dataNode.Params != null && dataNode.Params.length > 0) {
+            dataNode.Params.forEach((pNode, index) => {
                 let pType = this.getPathParts(pNode.TypeName);
                 let pTitle = pType[pType.length - 1];
                 let keyword = this.getParameterKeyword(pNode);
 
                 if (index > 0)
-                    parameters += ", ";
+                    params += ", ";
 
                 let docTarget = this.getDocTarget(pNode.TypeName, pNode.Name, pTitle, 0, "doc-parameter");
-                parameters += `${keyword} ${docTarget} ${pNode.Name}`;
+                params += `${keyword} ${docTarget} ${pNode.Name}`;
             });
         }
 
         elPage.append(`
             <div class="obj-section code">
-                <h2>Call Example</h2>
                 <table>
-                    <tbody><tr><td>${returnCall}${parentTarget}.${name}(${parameters})</td></tr></tbody>
+                    <tbody><tr><td>${returnCall}${parentTarget}.${name}(${params})</td></tr></tbody>
                 </table>
             </div>
         `);

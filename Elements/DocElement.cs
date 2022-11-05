@@ -49,7 +49,19 @@ namespace HtmlDocGenerator
             memList.Add(element);
         }
 
-        
+        [JsonProperty]
+        public bool? IsStatic { get; init; }
+
+        [JsonProperty]
+        public bool? IsVirtual { get; init; }
+
+        [JsonProperty]
+        public bool? IsAbstract { get; init; }
+
+        [JsonProperty]
+        public bool? IsProtected { get; init; }
+
+
         public Dictionary<string, List<DocElement>> Members { get; set; } = new Dictionary<string, List<DocElement>>();
 
         /// <summary>

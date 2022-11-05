@@ -39,24 +39,32 @@ class BaseLoader {
         });
 
         let iconHtml = this.manager.getIcon(dataNode);
-        let summary = dataNode.Summary != null && dataNode.Summary.length > 0 ? dataNode.Summary : "No summary.";
 
         let inheritHtml = this.buildInheritChainHtml(dataNode);
         if (inheritHtml != null && inheritHtml.length > 0)
             inheritHtml = ` - Inherits: ${inheritHtml}`;
 
+        let modifier = "";
+        if (dataNode.IsStatic == true)
+            modifier += "Static ";
+
+        if (dataNode.IsVirtual == true)
+            modifier += "Virtual ";
+
+        if (dataNode.IsAbstract == true && dataNode.IsStatic != true)
+            modifier += "Abstract ";
+
         elPage.html(`
             <div class="page-header">
                 <div class="page-title">${iconHtml}<span id="page-title-span">${pathHtml}</span></div>
-                <div class="page-info"><span class="page-inherit">${dataNode.DocType}${inheritHtml}</span></div>
+                <div class="page-info"><span class="page-inherit"><i class="keyword">${modifier}${dataNode.DocType}</i>${inheritHtml}</span></div>
             </div>
             <div id="${elPageName}-inner" class="scrollable sec-content"></div>
         `);
 
         this.manager.registerDocTargets(elPage);
         elPage = $(`#${elPageName}-inner`);
-        elPage.append(`<div class="obj-summary"><p>${summary}</p>`);           
-
+        this.loadIntro(elPage, dataNode, docPath);
         this.loadContent(elPage, dataNode, docPath);
         this.buildRemarkSection(elPage, dataNode);
 
@@ -64,6 +72,17 @@ class BaseLoader {
     }
 
     loadContent(elPage, dataNode, docPath) { }
+
+    loadIntro(elPage, dataNode, docPath) {
+        let summary = "";
+
+        if (dataNode.Summary == null || dataNode.Summary.length == 0)
+            summary = "No summary.";
+        else
+            summary = dataNode.Summary;
+
+        elPage.append(`<div class="obj-summary"><p>${summary}</p>`);   
+    }
 
     getPathParts(docPath) {
         return docPath.split(".");
@@ -171,11 +190,11 @@ class BaseLoader {
     }
 
     buildInheritChainHtml(dataNode) {
-        if (dataNode.BaseTypeName == null)
+        if (dataNode.BaseName == null)
             return "";
 
         let html = "";
-        let basePath = dataNode.BaseTypeName;
+        let basePath = dataNode.BaseName;
         let baseNode = this.manager.getNode(basePath);
         if (baseNode == null)
             return;
@@ -191,7 +210,7 @@ class BaseLoader {
             html = this.getDocTarget(basePath, "", title) + html;
 
             // Get next base node
-            basePath = baseNode.BaseTypeName;
+            basePath = baseNode.BaseName;
             baseNode = this.manager.getNode(basePath);
         }
 
@@ -202,11 +221,11 @@ class BaseLoader {
     }
 
     buildParameterHtml(dataNode) {
-        if (dataNode.Parameters == null || dataNode.Parameters.length == 0)
+        if (dataNode.Params == null || dataNode.Params.length == 0)
             return "()";
 
         let html = "";
-        dataNode.Parameters.forEach((pNode, index) => {
+        dataNode.Params.forEach((pNode, index) => {
             let pType = this.getPathParts(pNode.TypeName);
             let pTitle = pType[pType.length - 1];
             let keyword = this.getParameterKeyword(pNode);

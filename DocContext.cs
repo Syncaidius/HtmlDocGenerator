@@ -163,7 +163,7 @@ namespace HtmlDocGenerator
                 if (type.IsGenericType)
                     objName = HtmlHelper.GetHtmlName(type);
 
-                obj = new DocObject(objName);
+                obj = new DocObject(type, objName);
                 obj.UnderlyingType = type;
                 ObjectsByQualifiedName[type.FullName] = obj;
 

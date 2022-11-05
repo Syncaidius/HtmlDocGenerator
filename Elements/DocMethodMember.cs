@@ -13,6 +13,11 @@ namespace HtmlDocGenerator
     {
         public DocMethodMember(DocObject parent, MethodBase info) : base(parent, info)
         {
+            IsStatic = info.IsStatic ? true : null;
+            IsVirtual = info.IsVirtual ? true : null;
+            IsAbstract = info.IsAbstract ? true : null;
+            IsProtected = info.IsFamily && !info.IsPrivate ? true : null;
+
             ParameterInfo[] parameters = info.GetParameters();
 
             for (int i = 0; i < parameters.Length; i++)
@@ -68,12 +73,13 @@ namespace HtmlDocGenerator
             return match;
         }
 
-        [JsonProperty]
+        [JsonProperty("Return")]
         public string ReturnTypeName { get; }
+
 
         public List<DocParameter> Parameters { get; } = new List<DocParameter>();
 
-        [JsonProperty("Parameters")]
+        [JsonProperty("Params")]
         public List<DocParameter> SerializedParameters => Parameters.Count > 0 ? Parameters : null;
 
         public Dictionary<string, DocParameter> ParametersByName { get; } = new Dictionary<string, DocParameter>();

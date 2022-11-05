@@ -7,6 +7,7 @@
     --border-color: #555555;
     --grey-color: #999999;
     --grey-light-color: #DDDDDD;
+    --keyword-color: #47aedc;
 }
 
 body {
@@ -39,7 +40,7 @@ body {
 }
 
 .keyword{
-    color: #47aedc;
+    color: var(--keyword-color);
     font-weight:normal;
 }
 
@@ -248,6 +249,10 @@ body {
 
 .page-info .doc-target{
     color:var(--grey-light-color);
+}
+
+.page-inherit .keyword{
+    font-style: normal;
 }
 
 .page-inherit .doc-target:hover {

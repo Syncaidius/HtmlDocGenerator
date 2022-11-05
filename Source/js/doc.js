@@ -14,6 +14,7 @@ class DocManager {
         this.loaders["Enum"] = this.loaders["Class"];
         this.loaders["Namespace"] = new NamespaceLoader(this);
         this.loaders["Method"] = new MethodLoader(this);
+        this.loaders["Constructor"] = this.loaders["Method"];
     }
 
     populateIndex() {
