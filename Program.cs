@@ -60,7 +60,11 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             string json = JsonConvert.SerializeObject(_context, Formatting.Indented, settings);
             json = $"var docData = {json};";
 
-            using (FileStream stream = new FileStream($"{destPath}\\js\\data.js", FileMode.Create, FileAccess.Write))
+            string jsPath = $"{destPath}js\\";
+            if (!Directory.Exists(jsPath))
+                Directory.CreateDirectory(jsPath);
+
+            using (FileStream stream = new FileStream($"{jsPath}data.js", FileMode.Create, FileAccess.Write))
             {
                 using (StreamWriter writer = new StreamWriter(stream))
                     writer.Write(json);

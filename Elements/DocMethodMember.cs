@@ -14,8 +14,8 @@ namespace HtmlDocGenerator
         public DocMethodMember(DocObject parent, MethodBase info) : base(parent, info)
         {
             IsStatic = info.IsStatic ? true : null;
-            IsVirtual = info.IsVirtual ? true : null;
             IsAbstract = info.IsAbstract ? true : null;
+            IsVirtual = info.IsVirtual && !info.IsAbstract ? true : null;
             IsProtected = info.IsFamily && !info.IsPrivate ? true : null;
 
             ParameterInfo[] parameters = info.GetParameters();
