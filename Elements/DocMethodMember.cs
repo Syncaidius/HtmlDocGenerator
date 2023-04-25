@@ -76,7 +76,6 @@ namespace HtmlDocGenerator
         [JsonProperty("Return")]
         public string ReturnTypeName { get; }
 
-
         public List<DocParameter> Parameters { get; } = new List<DocParameter>();
 
         [JsonProperty("Params")]

@@ -53,11 +53,16 @@ namespace HtmlDocGenerator // Note: actual namespace depends on the project name
             JsonSerializerSettings settings = new JsonSerializerSettings()
             {
                 NullValueHandling = NullValueHandling.Ignore,
+#if DEBUG
+                Formatting = Formatting.Indented,
+#else
+                Formatting = Formatting.None,
+#endif
             };
 
             settings.Converters.Add(new StringEnumConverter());
 
-            string json = JsonConvert.SerializeObject(_context, Formatting.Indented, settings);
+            string json = JsonConvert.SerializeObject(_context, settings);
             json = $"var docData = {json};";
 
             string jsPath = $"{destPath}js\\";

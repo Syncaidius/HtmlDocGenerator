@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -22,6 +23,16 @@ namespace HtmlDocGenerator
 
             if (Info.SetMethod != null)
                 Setter = new DocMethodMember(parent, Info.SetMethod);
+
+            ParameterInfo[] indexParameters = info.GetIndexParameters();
+            IsIndexer = indexParameters.Length > 0;
+
+            for (int i = 0; i < indexParameters.Length; i++)
+            {
+                DocParameter p = new DocParameter(indexParameters[i]);
+                Parameters.Add(p);
+                ParametersByName.Add(p.Name, p);
+            }
         }
 
         public PropertyInfo Info { get; }
@@ -33,6 +44,16 @@ namespace HtmlDocGenerator
 
         [JsonProperty]
         public DocMethodMember Setter { get; }
+
+        [JsonProperty]
+        public bool IsIndexer { get; }
+
+        public List<DocParameter> Parameters { get; } = new List<DocParameter>();
+
+        public Dictionary<string, DocParameter> ParametersByName { get; } = new Dictionary<string, DocParameter>();
+
+        [JsonProperty("Params")]
+        public List<DocParameter> SerializedParameters => Parameters.Count > 0 ? Parameters : null;
 
         public override string Namespace => Info.PropertyType.Namespace;
     }
