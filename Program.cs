@@ -1,135 +1,129 @@
-﻿using HtmlDocGenerator;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.IO;
-using System.Net.Mail;
 using System.Reflection;
-using System.Xml.Linq;
 
-namespace HtmlDocGenerator // Note: actual namespace depends on the project name.
+namespace HtmlDocGenerator; // Note: actual namespace depends on the project name.
+
+internal class Program
 {
-    internal class Program
+    const string PACKAGE_STORE_PATH = "packages\\";
+
+    static NugetManager _nuget;
+    static DocContext _context;
+
+    static void Main(string[] args)
     {
-        const string PACKAGE_STORE_PATH = "packages\\";
-
-        static NugetManager _nuget;
-        static DocContext _context;
-
-        static void Main(string[] args)
-        {
-            Run(args);
+        Run(args);
 
 #if DEBUG
-            Console.WriteLine("Press any key to exit...");
+        Console.WriteLine("Press any key to exit...");
 #endif
-            Console.ReadKey();
-        }
+        Console.ReadKey();
+    }
 
-        private static void Run(string[] args)
+    private static void Run(string[] args)
+    {
+        _context = DocContext.Load("Molten Engine Documentation", "config.xml");
+        if (_context == null)
+            return;
+
+        DocParser parser = new DocParser();
+        _nuget = new NugetManager(PACKAGE_STORE_PATH);
+
+        AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+        foreach (NugetDefinition nd in _context.Packages)
+            _nuget.LoadPackage(nd);
+
+        foreach (string def in _context.Definitions)
+            parser.LoadXml(_context, def);
+
+
+        string destPath = _context.DestinationPath;
+        if (!Path.IsPathFullyQualified(destPath))
+            destPath = Path.GetFullPath(destPath);
+
+        parser.Parse(_context, destPath);
+
+        JsonSerializerSettings settings = new JsonSerializerSettings()
         {
-            _context = DocContext.Load("Molten Engine Documentation", "config.xml");
-            if (_context == null)
-                return;
-
-            DocParser parser = new DocParser();
-            _nuget = new NugetManager(PACKAGE_STORE_PATH);
-
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            foreach (NugetDefinition nd in _context.Packages)
-                _nuget.LoadPackage(nd);
-
-            foreach (string def in _context.Definitions)
-                parser.LoadXml(_context, def);
-
-
-            string destPath = _context.DestinationPath;
-            if (!Path.IsPathFullyQualified(destPath))
-                destPath = Path.GetFullPath(destPath);
-
-            parser.Parse(_context, destPath);
-
-            JsonSerializerSettings settings = new JsonSerializerSettings()
-            {
-                NullValueHandling = NullValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
 #if DEBUG
-                Formatting = Formatting.Indented,
+            Formatting = Formatting.Indented,
 #else
-                Formatting = Formatting.None,
+            Formatting = Formatting.None,
 #endif
-            };
+        };
 
-            settings.Converters.Add(new StringEnumConverter());
+        settings.Converters.Add(new StringEnumConverter());
 
-            string json = JsonConvert.SerializeObject(_context, settings);
-            json = $"var docData = {json};";
+        string json = JsonConvert.SerializeObject(_context, settings);
+        json = $"var docData = {json};";
 
-            string jsPath = $"{destPath}js\\";
-            if (!Directory.Exists(jsPath))
-                Directory.CreateDirectory(jsPath);
+        string jsPath = $"{destPath}js\\";
+        if (!Directory.Exists(jsPath))
+            Directory.CreateDirectory(jsPath);
 
-            using (FileStream stream = new FileStream($"{jsPath}data.js", FileMode.Create, FileAccess.Write))
-            {
-                using (StreamWriter writer = new StreamWriter(stream))
-                    writer.Write(json);
-            }
-
-            // Copy source files to destination directory.
-            FileInfo[] srcFiles = _context.SourceDirectory.GetFiles("*.*", SearchOption.AllDirectories);
-            foreach(FileInfo srcInfo in srcFiles)
-            {
-                string relative = Path.GetRelativePath(_context.SourceDirectory.FullName, srcInfo.FullName);
-                FileInfo destInfo = new FileInfo($"{destPath}{relative}");
-
-                if (!destInfo.Directory.Exists)
-                    destInfo.Directory.Create();
-
-                File.Copy(srcInfo.FullName, destInfo.FullName, true);
-            }
+        using (FileStream stream = new FileStream($"{jsPath}data.js", FileMode.Create, FileAccess.Write))
+        {
+            using (StreamWriter writer = new StreamWriter(stream))
+                writer.Write(json);
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        // Copy source files to destination directory.
+        FileInfo[] srcFiles = _context.SourceDirectory.GetFiles("*.*", SearchOption.AllDirectories);
+        foreach(FileInfo srcInfo in srcFiles)
         {
-            string[] aParts = args.Name.Split(',');
-            string aName = aParts[0];
+            string relative = Path.GetRelativePath(_context.SourceDirectory.FullName, srcInfo.FullName);
+            FileInfo destInfo = new FileInfo($"{destPath}{relative}");
 
-            if (!_context.Assemblies.TryGetValue(aName, out DocAssembly da))
+            if (!destInfo.Directory.Exists)
+                destInfo.Directory.Create();
+
+            File.Copy(srcInfo.FullName, destInfo.FullName, true);
+        }
+    }
+
+    private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+    {
+        string[] aParts = args.Name.Split(',');
+        string aName = aParts[0];
+
+        if (!_context.Assemblies.TryGetValue(aName, out DocAssembly da))
+        {
+            FileInfo requestingInfo = new FileInfo(args.RequestingAssembly.Location);
+            FileInfo assemblyInfo = new FileInfo($"{requestingInfo.Directory.FullName}\\{aName}.dll");
+
+            if (assemblyInfo.Exists)
             {
-                FileInfo requestingInfo = new FileInfo(args.RequestingAssembly.Location);
-                FileInfo assemblyInfo = new FileInfo($"{requestingInfo.Directory.FullName}\\{aName}.dll");
+                da = new DocAssembly()
+                {
+                    Name = aName,
+                    FilePath = assemblyInfo.FullName,
+                    Assembly = Assembly.LoadFile(assemblyInfo.FullName)
+                };
 
-                if (assemblyInfo.Exists)
+                _context.Assemblies.Add(aName, da);
+            }
+            else
+            {
+                // Check nuget instead
+                if (_nuget.TryGetAssembly(aName, out Assembly nugetAssembly))
                 {
                     da = new DocAssembly()
                     {
                         Name = aName,
-                        FilePath = assemblyInfo.FullName,
-                        Assembly = Assembly.LoadFile(assemblyInfo.FullName)
+                        FilePath = nugetAssembly.Location,
+                        Assembly = nugetAssembly
                     };
-
-                    _context.Assemblies.Add(aName, da);
                 }
                 else
                 {
-                    // Check nuget instead
-                    if (_nuget.TryGetAssembly(aName, out Assembly nugetAssembly))
-                    {
-                        da = new DocAssembly()
-                        {
-                            Name = aName,
-                            FilePath = nugetAssembly.Location,
-                            Assembly = nugetAssembly
-                        };
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Error: Missing assembly '{args.Name}'");
-                    }
+                    Console.WriteLine($"Error: Missing assembly '{args.Name}'");
                 }
             }
-
-            return da?.Assembly;
         }
+
+        return da?.Assembly;
     }
 }

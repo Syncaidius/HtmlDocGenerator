@@ -1,41 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace HtmlDocGenerator;
 
-namespace HtmlDocGenerator
+public enum DocObjectType
 {
-    public enum DocObjectType
-    {
-        Unknown = 0,
+    Unknown = 0,
 
-        ObjectType = 1,
+    ObjectType = 1,
 
-        Class = 2,
+    Class = 2,
 
-        Struct = 3,
+    Struct = 3,
 
-        Enum = 4,
+    Enum = 4,
 
-        Interface = 5,
+    Interface = 5,
 
-        Event = 6,
+    Event = 6,
 
-        Field = 7,
+    Field = 7,
 
-        Property = 8,
+    Property = 8,
 
-        Method = 9,
+    Method = 9,
 
-        Invalid = 10,
+    Invalid = 10,
 
-        Namespace = 11,
+    Namespace = 11,
 
-        Constructor = 12,
+    Constructor = 12,
 
-        Parameter = 13,
+    Parameter = 13,
 
-        TypeParameter = 14,
-    }
+    TypeParameter = 14,
 }
